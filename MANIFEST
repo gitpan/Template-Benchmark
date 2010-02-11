@@ -17,7 +17,8 @@ lib/Template/Benchmark/Engines/TextMicroMasonTeTe.pm
 lib/Template/Benchmark/Engines/TextMicroTemplate.pm
 lib/Template/Benchmark/Engines/TextTemplate.pm
 lib/Template/Benchmark/Engines/TextTmpl.pm
-MANIFEST
+MANIFEST			This list of files
+META.yml
 README
 script/benchmark_template_engines
 t/00-load.t
@@ -25,6 +26,4 @@ t/50-script-run.t
 t/90-pod.t
 t/95-boilerplate.t
 t/99-pod-coverage.t
-Makefile.PL
-META.yml
 SIGNATURE    Added here by Module::Build
