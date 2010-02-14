@@ -14,38 +14,38 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 433e7c110e8703983d58672067658cf4a3061240 Build.PL
-SHA1 f34f6ff5fbc9d4006a43ca3f64e02b29b13bd5ea Changes
+SHA1 ee6245e4da7f36fdc7f2ba95762e5d2c4df6fab6 Build.PL
+SHA1 9407fa71117d5c23f3120b15839e7552700f22a9 Changes
 SHA1 53afa50c1be38a1962b06a46d8f96f0b28cc96ed MANIFEST
-SHA1 5bd34b3f40349f90a941664715092c7d72310f58 META.yml
+SHA1 41a7af1c969e7b0716ebb0379e47681c52cbe862 META.yml
 SHA1 068c08627fe69dc0eca201198951a66cf4c30c89 README
-SHA1 15e0638334c287ef35303ab0c2ffa04e61ebba20 lib/Template/Benchmark.pm
-SHA1 d8e3a3b2003a4d1e0236ae90da6afb2ea1b5bc3c lib/Template/Benchmark/Engine.pm
-SHA1 44c50e0717252d4dee51ce97f7afe37b5cae5ba2 lib/Template/Benchmark/Engines/HTMLTemplate.pm
-SHA1 4386ba45ee69eba9952c28bf2add7a3c03f53617 lib/Template/Benchmark/Engines/HTMLTemplateCompiled.pm
-SHA1 3e01c3483bfba72186ebc601c44cbca6b9360290 lib/Template/Benchmark/Engines/HTMLTemplateExpr.pm
-SHA1 86c00c8db1ad6d6e7966b07fc7b9a51d7a394baa lib/Template/Benchmark/Engines/HTMLTemplateJIT.pm
-SHA1 14a677cea015fb9b1f581e17052f6ccbdd758e91 lib/Template/Benchmark/Engines/HTMLTemplatePro.pm
-SHA1 731c7d992516ccf406ce617517d1a2aea7e1283e lib/Template/Benchmark/Engines/MojoTemplate.pm
-SHA1 ec7cb17c8be900c9e555c3fad0be019e277a01e1 lib/Template/Benchmark/Engines/TemplateAlloyHT.pm
-SHA1 fd762fa6388b7070c034586049f5625cb75dbc28 lib/Template/Benchmark/Engines/TemplateAlloyTT.pm
-SHA1 41e6e0029833bfefb8949b85f8ca6e6495990c33 lib/Template/Benchmark/Engines/TemplateSandbox.pm
-SHA1 b6641190d57c983bebabf8be4d096cc807ba9d6d lib/Template/Benchmark/Engines/TemplateToolkit.pm
-SHA1 df35a8ddc1f3186c3dd0a02a760b9ff3d51b125c lib/Template/Benchmark/Engines/TextMicroMasonHM.pm
-SHA1 2c0882b7eb8cab1f7da0da30b715859a962b2066 lib/Template/Benchmark/Engines/TextMicroMasonTeTe.pm
-SHA1 8b467266d33706e29e6343949a4735b2707fadd0 lib/Template/Benchmark/Engines/TextMicroTemplate.pm
-SHA1 1854ed99e086761425f2d61db5898a6b44ba687b lib/Template/Benchmark/Engines/TextTemplate.pm
-SHA1 0724a3d53b6e5a008b91e83afbb9bdeee411e739 lib/Template/Benchmark/Engines/TextTmpl.pm
+SHA1 d207323a4dbeb4a859a4f3a5d86941bf3c8845aa lib/Template/Benchmark.pm
+SHA1 247476df6218b07f576fa88c4932f0e1a906f3f8 lib/Template/Benchmark/Engine.pm
+SHA1 dbff2a0b29382263033130fa88f50de35ccaf24f lib/Template/Benchmark/Engines/HTMLTemplate.pm
+SHA1 7b8bdd1b82dce3c11f2a5ff34cddb9c0cc6410bb lib/Template/Benchmark/Engines/HTMLTemplateCompiled.pm
+SHA1 7f9f538e522ca8baeac483cbb6f1d106da025956 lib/Template/Benchmark/Engines/HTMLTemplateExpr.pm
+SHA1 01b0de83d9ed9ec96b957616383f50b1a54e1d34 lib/Template/Benchmark/Engines/HTMLTemplateJIT.pm
+SHA1 064d5ec8d96c2b701a342d1b440ef2f4412ef571 lib/Template/Benchmark/Engines/HTMLTemplatePro.pm
+SHA1 1eca95cfd14adadaf73c82e51540164563fce0fa lib/Template/Benchmark/Engines/MojoTemplate.pm
+SHA1 ba0e6ba6fcdc39b81db2ad4fa9929af6632877c0 lib/Template/Benchmark/Engines/TemplateAlloyHT.pm
+SHA1 39162a0281fb165d8b76a182aed9f3df23cba7f4 lib/Template/Benchmark/Engines/TemplateAlloyTT.pm
+SHA1 f16d1cb90e6866a1cc1569555b22e6e42500b192 lib/Template/Benchmark/Engines/TemplateSandbox.pm
+SHA1 c67bcf5cbf6a00d27121d00e0c80f7b87d0c2984 lib/Template/Benchmark/Engines/TemplateToolkit.pm
+SHA1 8fce76c1e110e9df2786e048e5c1c0ea6f577e68 lib/Template/Benchmark/Engines/TextMicroMasonHM.pm
+SHA1 6e8298cb873f3f5aa60a9d33501c4f2555caed01 lib/Template/Benchmark/Engines/TextMicroMasonTeTe.pm
+SHA1 79f695962005952205934ba280fb09138d081838 lib/Template/Benchmark/Engines/TextMicroTemplate.pm
+SHA1 62d3b864861f40f95769e35407951610ee15e4d6 lib/Template/Benchmark/Engines/TextTemplate.pm
+SHA1 96d4af1ae30d59419c3613a0279069dd40addba2 lib/Template/Benchmark/Engines/TextTmpl.pm
 SHA1 d6d29d31d90182bed8120d6e2f9712ec0985053f script/benchmark_template_engines
 SHA1 2a26fa46404a9a16bbe098ceec1bd14b96739c04 t/00-load.t
-SHA1 21c1f2e2ec7e74313a09687a97fb6d6a4cc72d18 t/50-script-run.t
+SHA1 e9a57afc34605718cc2597df6d26541d4243178b t/50-script-run.t
 SHA1 640935336dc1123c0069bcf5432bcaedc2cf22d3 t/90-pod.t
 SHA1 c2a9de7adf1bab7340169ee19a94dab0229f7d44 t/95-boilerplate.t
 SHA1 3ed41d7fcda4fafc05463660a89567126988f539 t/99-pod-coverage.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkt25rcACgkQk0asf7iG0tRIOQCgo5h8x4ZUIzpYNsjFoVyCPrOt
-3OgAn1cz1WvoFLJ+tBGMmPMXKeJ5x5Xi
-=hp7n
+iEYEARECAAYFAkt4de0ACgkQk0asf7iG0tQ8KwCeIFEUZCXHcGWe/5B6Ov4uRbfg
+yRwAniIdUI6qswwGEStvBMk/bFDjGok1
+=hY2a
 -----END PGP SIGNATURE-----
