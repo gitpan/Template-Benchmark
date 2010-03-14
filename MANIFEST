@@ -26,6 +26,8 @@ META.yml
 README
 script/benchmark_template_engines
 t/00-load.t
+t/10-class-methods.t
+t/20-instance-methods.t
 t/50-script-run.t
 xt/release/check-changes.t
 xt/release/fixme.t
