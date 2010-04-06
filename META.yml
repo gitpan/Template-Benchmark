@@ -21,67 +21,67 @@ name: Template-Benchmark
 provides:
   Template::Benchmark:
     file: lib/Template/Benchmark.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engine:
     file: lib/Template/Benchmark/Engine.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::HTMLTemplate:
     file: lib/Template/Benchmark/Engines/HTMLTemplate.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::HTMLTemplateCompiled:
     file: lib/Template/Benchmark/Engines/HTMLTemplateCompiled.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::HTMLTemplateExpr:
     file: lib/Template/Benchmark/Engines/HTMLTemplateExpr.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::HTMLTemplateJIT:
     file: lib/Template/Benchmark/Engines/HTMLTemplateJIT.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::HTMLTemplatePro:
     file: lib/Template/Benchmark/Engines/HTMLTemplatePro.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::MojoTemplate:
     file: lib/Template/Benchmark/Engines/MojoTemplate.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::NTSTemplate:
     file: lib/Template/Benchmark/Engines/NTSTemplate.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::TemplateAlloyHT:
     file: lib/Template/Benchmark/Engines/TemplateAlloyHT.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::TemplateAlloyTT:
     file: lib/Template/Benchmark/Engines/TemplateAlloyTT.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::TemplateSandbox:
     file: lib/Template/Benchmark/Engines/TemplateSandbox.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::TemplateTiny:
     file: lib/Template/Benchmark/Engines/TemplateTiny.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::TemplateToolkit:
     file: lib/Template/Benchmark/Engines/TemplateToolkit.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::Tenjin:
     file: lib/Template/Benchmark/Engines/Tenjin.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::TextMicroMasonHM:
     file: lib/Template/Benchmark/Engines/TextMicroMasonHM.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::TextMicroMasonTeTe:
     file: lib/Template/Benchmark/Engines/TextMicroMasonTeTe.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::TextMicroTemplate:
     file: lib/Template/Benchmark/Engines/TextMicroTemplate.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::TextTemplate:
     file: lib/Template/Benchmark/Engines/TextTemplate.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::TextTemplateSimple:
     file: lib/Template/Benchmark/Engines/TextTemplateSimple.pm
-    version: 0.99_09
+    version: 0.99_10
   Template::Benchmark::Engines::TextTmpl:
     file: lib/Template/Benchmark/Engines/TextTmpl.pm
-    version: 0.99_09
+    version: 0.99_10
 requires:
   Benchmark: 0
   File::Path: 0
@@ -96,4 +96,4 @@ requires:
   perl: v5.6.1
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.99_09
+version: 0.99_10
