@@ -1,15 +1,11 @@
-package Template::Benchmark::Engines::HTMLTemplatePro;
+package Template::Benchmark::Engines::TextClearSilver;
 
 use warnings;
 use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-#  Need to use both these modules to prevent HTP from clobbering
-#  their ISA and screwing up their use by other modules if it loads first.
-use HTML::Template;
-use HTML::Template::Expr;
-use HTML::Template::Pro;
+use Text::ClearSilver;
 
 our $VERSION = '0.99_11';
 
@@ -22,65 +18,70 @@ foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
 END_OF_TEMPLATE
     scalar_variable           =>
-        '<TMPL_VAR NAME=scalar_variable>',
+        '<?cs var:scalar_variable ?>',
     hash_variable_value       =>
-        undef,
+        '<?cs var:hash_variable.hash_value_key ?>',
     array_variable_value      =>
-        undef,
+        '<?cs var:array_variable[ 2 ] ?>',
     deep_data_structure_value =>
-        undef,
+        '<?cs var:this.is.a.very.deep.hash.structure ?>',
     array_loop_value          =>
-        undef,
+        '<?cs each:i = array_loop ?><?cs var:i ?><?cs /each ?>',
     hash_loop_value           =>
         undef,
+#  This works but is unsorted, so we can't compare the output.
+#        '<?cs each:k = hash_loop ?><?cs name:k ?>: ' .
+#        '<?cs var:k ?><?cs /each ?>',
     records_loop_value        =>
-        '<TMPL_LOOP NAME=records_loop><TMPL_VAR NAME=name>: ' .
-        '<TMPL_VAR NAME=age></TMPL_LOOP>',
+        '<?cs each:r = records_loop ?><?cs var:r.name ?>: ' .
+        '<?cs var:r.age ?><?cs /each ?>',
     array_loop_template       =>
-        undef,
+        '<?cs each:i = array_loop ?><?cs var:i ?><?cs /each ?>',
     hash_loop_template        =>
         undef,
+#  This works but is unsorted, so we can't compare the output.
+#        '<?cs each:k = hash_loop ?><?cs name:k ?>: ' .
+#        '<?cs var:k ?><?cs /each ?>',
     records_loop_template     =>
-        '<TMPL_LOOP NAME=records_loop><TMPL_VAR NAME=name>: ' .
-        '<TMPL_VAR NAME=age></TMPL_LOOP>',
+        '<?cs each:r = records_loop ?><?cs var:r.name ?>: ' .
+        '<?cs var:r.age ?><?cs /each ?>',
     constant_if_literal       =>
-        '<TMPL_IF EXPR="1">true</TMPL_IF>',
+        '<?cs if 1 ?>true<?cs /if ?>',
     variable_if_literal       =>
-        '<TMPL_IF NAME=variable_if>true</TMPL_IF>',
+        '<?cs if variable_if ?>true<?cs /if ?>',
     constant_if_else_literal  =>
-        '<TMPL_IF EXPR="1">true<TMPL_ELSE>false</TMPL_IF>',
+        '<?cs if 1 ?>true<?cs else ?>false<?cs /if ?>',
     variable_if_else_literal  =>
-        '<TMPL_IF NAME=variable_if_else>true<TMPL_ELSE>false</TMPL_IF>',
+        '<?cs if variable_if_else ?>true<?cs else ?>false<?cs /if ?>',
     constant_if_template      =>
-        '<TMPL_IF EXPR="1"><TMPL_VAR NAME=template_if_true></TMPL_IF>',
+        '<?cs if 1 ?><?cs var:template_if_true ?><?cs /if ?>',
     variable_if_template      =>
-        '<TMPL_IF NAME=variable_if><TMPL_VAR NAME=template_if_true></TMPL_IF>',
+        '<?cs if variable_if ?><?cs var:template_if_true ?><?cs /if ?>',
     constant_if_else_template =>
-        '<TMPL_IF EXPR="1"><TMPL_VAR NAME=template_if_true>' .
-        '<TMPL_ELSE><TMPL_VAR NAME=template_if_false></TMPL_IF>',
+        '<?cs if 1 ?><?cs var:template_if_true ?><?cs else ?>' .
+        '<?cs var:template_if_false ?><?cs /if ?>',
     variable_if_else_template =>
-        '<TMPL_IF NAME=variable_if_else><TMPL_VAR NAME=template_if_true>' .
-        '<TMPL_ELSE><TMPL_VAR NAME=template_if_false></TMPL_IF>',
+        '<?cs if variable_if_else ?><?cs var:template_if_true ?><?cs else ?>' .
+        '<?cs var:template_if_false ?><?cs /if ?>',
     constant_expression       =>
-        '<TMPL_VAR EXPR="10 + 12">',
+        '<?cs var:10 + 12 ?>',
     variable_expression       =>
-        '<TMPL_VAR EXPR="variable_expression_a * variable_expression_b">',
+        '<?cs var:variable_expression_a * variable_expression_b ?>',
     complex_variable_expression =>
-        '<TMPL_VAR EXPR="' .
-        '( ( variable_expression_a * variable_expression_b ) + ' .
+        '<?cs var:( ( variable_expression_a * variable_expression_b ) + ' .
         'variable_expression_a - variable_expression_b ) / ' .
-        'variable_expression_b">',
+        'variable_expression_b ?>',
     constant_function         =>
-        q{<TMPL_VAR EXPR="substr( 'this has a substring', 11, 9 )">},
+        q{<?cs var:string.slice( 'this has a substring.', 11, 20 ) ?>},
     variable_function         =>
-        '<TMPL_VAR EXPR="substr( variable_function_arg, 4, 2 )">',
+        '<?cs var:string.slice( variable_function_arg, 4, 6 ) ?>',
     );
 
 sub benchmark_descriptions
 {
     return( {
-        HTP    =>
-            "HTML::Template::Pro ($HTML::Template::Pro::VERSION)",
+        TeCS   =>
+            "Text::ClearSilver ($Text::ClearSilver::VERSION)",
         } );
 }
 
@@ -89,17 +90,12 @@ sub benchmark_functions_for_uncached_string
     my ( $self ) = @_;
 
     return( {
-        HTP =>
+      TeCS =>
             sub
             {
-                my $t = HTML::Template::Pro->new(
-                    scalarref         => \$_[ 0 ],
-                    case_sensitive    => 1,
-                    die_on_bad_params => 0,
-                    );
-                $t->param( $_[ 1 ] );
-                $t->param( $_[ 2 ] );
-                my $out = $t->output();
+                my $t = Text::ClearSilver->new();
+                my $out = '';
+                $t->process( \$_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
                 $out;
             },
         } );
@@ -113,18 +109,14 @@ sub benchmark_functions_for_uncached_disk
     @template_dirs = ( $template_dir );
 
     return( {
-        HTP =>
+      TeCS =>
             sub
             {
-                my $t = HTML::Template::Pro->new(
-                    path              => \@template_dirs,
-                    filename          => $_[ 0 ],
-                    case_sensitive    => 1,
-                    die_on_bad_params => 0,
+                my $t = Text::ClearSilver->new(
+                    load_path => \@template_dirs,
                     );
-                $t->param( $_[ 1 ] );
-                $t->param( $_[ 2 ] );
-                my $out = $t->output();
+                my $out = '';
+                $t->process( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
                 $out;
             },
         } );
@@ -154,8 +146,23 @@ sub benchmark_functions_for_memory_cache
 sub benchmark_functions_for_instance_reuse
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
+    my ( $t, @template_dirs );
 
-    return( undef );
+    @template_dirs = ( $template_dir );
+
+    $t = Text::ClearSilver->new(
+        load_path => \@template_dirs,
+        );
+
+    return( {
+      TeCS =>
+            sub
+            {
+                my $out = '';
+                $t->process( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
+                $out;
+            },
+        } );
 }
 
 1;
@@ -166,21 +173,21 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::HTMLTemplatePro - Template::Benchmark plugin for HTML::Template::Pro.
+Template::Benchmark::Engines::TextClearSilver - Template::Benchmark plugin for Text::ClearSilver.
 
 =head1 SYNOPSIS
 
 Provides benchmark functions and template feature syntaxes to allow
-L<Template::Benchmark> to benchmark the L<HTML::Template::Pro> template
+L<Template::Benchmark> to benchmark the L<Text::ClearSilver> template
 engine.
 
-=head1 KNOWN ISSUES AND BUGS
-
-Despite not using L<HTML::Template> or L<HTML::Template::Expr> directly,
-this module needs to load them to prevent L<HTML::Template::Pro> from
-clobbering their ISA and breaking other benchmark modules using them if
-it is loaded first: in the event that you do not have either of those
-modules installed, this benchmark will fail to load.
+C<hash_loop_variable> and C<hash_loop_template> are not currently
+supported, although the underlying L<Text::ClearSilver> engine supports
+them.
+Their output is unsorted, making it impossible to compare
+template output with other template engines to check for accuracy of
+output.
+This may be possible to correct in a future release.
 
 =head1 AUTHOR
 
@@ -196,7 +203,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Template::Benchmark::Engines::HTMLTemplatePro
+    perldoc Template::Benchmark::Engines::TextClearSilver
 
 
 You can also look for information at:
