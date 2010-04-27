@@ -3,7 +3,7 @@ package Template::Benchmark::Engine;
 use warnings;
 use strict;
 
-our $VERSION = '0.99_11';
+our $VERSION = '0.99_12';
 our %feature_syntaxes = ();
 
 sub feature_syntax
@@ -62,6 +62,16 @@ sub benchmark_functions_for_memory_cache
     return( undef );
 }
 
+sub syntax_type
+{
+    return( undef );
+}
+
+sub pure_perl
+{
+    return( undef );
+}
+
 1;
 
 __END__
@@ -84,13 +94,8 @@ Template::Benchmark::Engine - Base class for Template::Benchmark template engine
   our $VERSION = '0.99_02';
 
   our %feature_syntaxes = (
-      literal_text              => <<END_OF_TEMPLATE,
-  foo foo foo foo foo foo foo foo foo foo foo foo
-  foo foo foo foo foo foo foo foo foo foo foo foo
-  foo foo foo foo foo foo foo foo foo foo foo foo
-  foo foo foo foo foo foo foo foo foo foo foo foo
-  foo foo foo foo foo foo foo foo foo foo foo foo
-  END_OF_TEMPLATE
+      literal_text              =>
+          join( "\n", ( join( ' ', ( 'foo' ) x 12 ) ) x 5 ),
       scalar_variable           =>
           '<: expr scalar_variable :>',
       );
@@ -155,13 +160,8 @@ to work, so declare it as a global or with C<our>.
 For example:
 
   our %feature_syntaxes = (
-      literal_text              => <<END_OF_TEMPLATE,
-  foo foo foo foo foo foo foo foo foo foo foo foo
-  foo foo foo foo foo foo foo foo foo foo foo foo
-  foo foo foo foo foo foo foo foo foo foo foo foo
-  foo foo foo foo foo foo foo foo foo foo foo foo
-  foo foo foo foo foo foo foo foo foo foo foo foo
-  END_OF_TEMPLATE
+      literal_text              =>
+          join( "\n", ( join( ' ', ( 'foo' ) x 12 ) ) x 5 ),
       scalar_variable           =>
           '<: expr scalar_variable :>',
       hash_variable_value       =>
@@ -225,7 +225,7 @@ L<HTML::Template> is HT, L<Text::Template> is TeTe as opposed
 to L<Text::Tmpl> being TeTmpl.
 
 Additional initials might be added if the I<template engine>
-can accept diffent template syntaxes, which is handled by several
+can accept different template syntaxes, which is handled by several
 plugins:
 
 L<Template::Alloy> gets TATT (running in L<Template::Toolkit> mode)
@@ -374,6 +374,41 @@ For example:
 Please see the section L</"Cache Types"> for a list of the
 different I<cache types> and what restrictions apply to
 the I<benchmark functions> in each.
+
+=item B<< $syntax_type = Plugin->syntax_type() >>
+
+This informative method should return the type of syntax this
+I<template engine> uses.
+Broadly speaking, most I<template engines> fall into either the
+'mini-language' or 'embedded-perl' camps, so return one of those
+two strings.
+
+=item B<< $purity = Plugin->pure_perl() >>
+
+This informative method should return C<1> if the
+I<template engine> is written in pure perl, and C<0>
+if the engine makes use of XS code, is a wrapper around a C
+library or in some other way mandates the use of non-perl
+dependencies.
+
+The default method returns undef and will treat the I<engine>
+as not being pure-perl.
+This may raise a warning or error in future versions.
+
+If a plugin has several benchmark names, some pure-perl and
+some otherwise, this method should return a hashref of name
+to C<0> or C<1> for the respective answers.
+
+For example, from L<Template::Benchmark::Engines::TemplateTolkit>:
+
+  sub pure_perl
+  {
+      return( {
+          TT      => 1,
+          TT_X    => 0,
+          TT_XCET => 0,
+          } );
+  }
 
 =back
 
@@ -603,6 +638,10 @@ The block of literal text to be used is:
   foo foo foo foo foo foo foo foo foo foo foo foo
   foo foo foo foo foo foo foo foo foo foo foo foo
 
+As produced by:
+
+  join( "\n", ( join( ' ', ( 'foo' ) x 12 ) ) x 5 )
+
 =item C<scalar_variable>
 
 Interpolation of a I<template variable> named C<scalar_variable>.
@@ -620,7 +659,7 @@ named C<array_variable> with index C<2>.
 =item C<deep_data_structure_value>
 
 Interpolation of a I<template variable> stored in the hashref
-named C<this> with nesteed keys C<'is'>, C<'a'>, C<'very'>, C<'deep'>,
+named C<this> with nested keys C<'is'>, C<'a'>, C<'very'>, C<'deep'>,
 C<'hash'>, C<'structure'>.
 
 This I<feature> is designed to stress the speed that the I<template engine>
