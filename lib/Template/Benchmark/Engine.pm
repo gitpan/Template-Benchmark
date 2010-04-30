@@ -3,7 +3,7 @@ package Template::Benchmark::Engine;
 use warnings;
 use strict;
 
-our $VERSION = '0.99_12';
+our $VERSION = '0.99_13';
 our %feature_syntaxes = ();
 
 sub feature_syntax
@@ -104,8 +104,7 @@ Template::Benchmark::Engine - Base class for Template::Benchmark template engine
 
 =head1 DESCRIPTION
 
-Provides a base class for L<Template::Benchmark> template engine plugins,
-and provides a handy place to document how to write your own plugin.
+Provides a base class for L<Template::Benchmark> template engine plugins.
 
 =head1 SUBCLASSING
 

@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use Template::Alloy;
 
-our $VERSION = '0.99_12';
+our $VERSION = '0.99_13';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -207,7 +207,7 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::TemplateAlloyHT - Template::Benchmark plugin for Template::Alloy.
+Template::Benchmark::Engines::TemplateAlloyHT - Template::Benchmark plugin for Template::Alloy in HTML::Template mode.
 
 =head1 SYNOPSIS
 

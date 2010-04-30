@@ -9,7 +9,7 @@ use Text::MicroMason;
 
 use File::Spec;
 
-our $VERSION = '0.99_12';
+our $VERSION = '0.99_13';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -171,7 +171,7 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::TextMicroMasonHM - Template::Benchmark plugin for Text::MicroMason in HTML:Mason mode.
+Template::Benchmark::Engines::TextMicroMasonHM - Template::Benchmark plugin for Text::MicroMason in HTML::Mason mode.
 
 =head1 SYNOPSIS
 

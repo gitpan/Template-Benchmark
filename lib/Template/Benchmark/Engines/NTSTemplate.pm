@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use NTS::Template;
 
-our $VERSION = '0.99_12';
+our $VERSION = '0.99_13';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -140,7 +140,7 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::NTSTemplate - Template::Benchmark plugin for Template::Toolkit.
+Template::Benchmark::Engines::NTSTemplate - Template::Benchmark plugin for NTS::Template.
 
 =head1 SYNOPSIS
 
