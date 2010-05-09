@@ -5,10 +5,10 @@ use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-#  0.1004 fixed several bugs that effected Template::Benchmark.
-use Text::Xslate 0.1004;
+#  0.1008 changed the API needed for uncached_string.
+use Text::Xslate 0.1008;
 
-our $VERSION = '0.99_13';
+our $VERSION = '1.00';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -89,10 +89,9 @@ sub benchmark_functions_for_uncached_string
             sub
             {
                 my $t = Text::Xslate->new(
-                    string => $_[ 0 ],
                     cache  => 0,
                     );
-                $t->render( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                $t->render_string( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -102,14 +101,6 @@ sub benchmark_functions_for_uncached_disk
     my ( $self, $template_dir ) = @_;
     my ( @template_dirs );
 
-    #  Current version (0.001_05) will always load from disk
-    #  cache file if it exists, even if caching is turned off,
-    #  this means we CANNOT run both uncached and cached disk
-    #  benchmarks within the same run, cached is likely to be
-    #  the more useful benchmark, so we'll disable the uncached disk
-    #  benchmark for now.
-    return( undef );
-
     @template_dirs = ( $template_dir );
 
     return( {
@@ -118,10 +109,9 @@ sub benchmark_functions_for_uncached_disk
             {
                 my $t = Text::Xslate->new(
                     path  => \@template_dirs,
-                    file  => $_[ 0 ],
                     cache => 0,
                     );
-                $t->render( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -138,9 +128,9 @@ sub benchmark_functions_for_disk_cache
             sub
             {
                 my $t = Text::Xslate->new(
-                    path  => \@template_dirs,
-                    file  => [ $_[ 0 ] ], # preload
-                    cache => 2,
+                    path      => \@template_dirs,
+                    cache_dir => $cache_dir,
+                    cache     => 2,
                     );
                 $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
@@ -173,9 +163,9 @@ sub benchmark_functions_for_instance_reuse
             sub
             {
                 $t = Text::Xslate->new(
-                    path  => \@template_dirs,
-                    file  => [ $_[ 0 ] ], # preload
-                    cache => 2,
+                    path      => \@template_dirs,
+                    cache_dir => $cache_dir,
+                    cache     => 2,
                     ) unless $t;
                 $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
