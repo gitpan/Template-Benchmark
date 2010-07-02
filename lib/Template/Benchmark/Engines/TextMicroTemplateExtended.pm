@@ -1,12 +1,11 @@
-package Template::Benchmark::Engines::TextMicroTemplate;
+package Template::Benchmark::Engines::TextMicroTemplateExtended;
 
 use warnings;
 use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-use Text::MicroTemplate;
-use Text::MicroTemplate::File;
+use Text::MicroTemplate::Extended;
 
 our $VERSION = '1.02_03';
 
@@ -85,8 +84,9 @@ sub pure_perl { return( 1 ); }
 sub benchmark_descriptions
 {
     return( {
-        TeMT    =>
-            "Text::MicroTemplate ($Text::MicroTemplate::VERSION)",
+        TeMTE   =>
+            "Text::MicroTemplate::Extended " .
+                "($Text::MicroTemplate::Extended::VERSION)",
         } );
 }
 
@@ -94,17 +94,7 @@ sub benchmark_functions_for_uncached_string
 {
     my ( $self ) = @_;
 
-    return( {
-        TeMT =>
-            sub
-            {
-                my $t = Text::MicroTemplate->new(
-                    template    => $_[ 0 ],
-                    escape_func => undef,
-                    );
-                $t->render_mt( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
-            },
-        } );
+    return( undef );
 }
 
 sub benchmark_functions_for_uncached_disk
@@ -112,11 +102,12 @@ sub benchmark_functions_for_uncached_disk
     my ( $self, $template_dir ) = @_;
 
     return( {
-        TeMT =>
+        TeMTE =>
             sub
             {
-                my $t = Text::MicroTemplate::File->new(
+                my $t = Text::MicroTemplate::Extended->new(
                     include_path => [ $template_dir ],
+                    extension    => '',
                     escape_func  => undef,
                     use_cache    => 0,
                     );
@@ -144,11 +135,12 @@ sub benchmark_functions_for_memory_cache
     my ( $self, $template_dir, $cache_dir ) = @_;
 
     return( {
-        TeMT =>
+        TeMTE =>
             sub
             {
-                my $t = Text::MicroTemplate::File->new(
+                my $t = Text::MicroTemplate::Extended->new(
                     include_path => [ $template_dir ],
+                    extension    => '',
                     escape_func  => undef,
                     use_cache    => 1,
                     );
@@ -172,12 +164,12 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::TextMicroTemplate - Template::Benchmark plugin for Text::MicroTemplate.
+Template::Benchmark::Engines::TextMicroTemplateExtended - Template::Benchmark plugin for Text::MicroTemplate::Extended.
 
 =head1 SYNOPSIS
 
 Provides benchmark functions and template feature syntaxes to allow
-L<Template::Benchmark> to benchmark the L<Text::MicroTemplate> template
+L<Template::Benchmark> to benchmark the L<Text::MicroTemplate::Extended> template
 engine.
 
 =head1 AUTHOR
@@ -194,7 +186,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Template::Benchmark::Engines::TextMicroTemplate
+    perldoc Template::Benchmark::Engines::TextMicroTemplateExtended
 
 
 You can also look for information at:
