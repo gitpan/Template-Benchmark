@@ -30,7 +30,9 @@ README
 script/benchmark_template_engines
 t/00-load.t
 t/10-class-methods.t
+t/15-constructor.t
 t/20-instance-methods.t
+t/30-custom-dataset.t
 t/50-script-run.t
 xt/release/check-changes.t
 xt/release/fixme.t
