@@ -33,6 +33,7 @@ t/10-class-methods.t
 t/15-constructor.t
 t/20-instance-methods.t
 t/30-custom-dataset.t
+t/40-per-feature-repeats.t
 t/50-script-run.t
 xt/release/check-changes.t
 xt/release/fixme.t
