@@ -5,7 +5,7 @@ use strict;
 
 use Benchmark;
 
-use POSIX qw(tmpnam);
+use File::Temp;
 use File::Path qw(mkpath rmtree);
 use File::Spec;
 use IO::File;
@@ -14,7 +14,7 @@ use Scalar::Util;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '1.04';
+our $VERSION = '1.04_01';
 
 my @valid_features = qw/
     literal_text
@@ -90,11 +90,12 @@ my %option_defaults = (
     instance_reuse              => 1,
 
     #  Other options.
-    template_repeats => 30,
-    duration         => 10,
-    dataset          => 'original',
-    style            => 'none',
-    keep_tmp_dirs    => 0,
+    template_repeats    => 30,
+    duration            => 10,
+    dataset             => 'original',
+    style               => 'none',
+    keep_tmp_dirs       => 0,
+    skip_output_compare => 0,
 
     #  Plugin control.
     only_plugin      => {},
@@ -160,7 +161,7 @@ my %datasets = (
 sub new
 {
     my $this = shift;
-    my ( $self, $class, $options, $var_hash1, $var_hash2 );
+    my ( $self, $class, $options, $var_hash1, $var_hash2, %temp_options );
 
     $self = {};
     $class = ref( $this ) || $this;
@@ -271,11 +272,28 @@ sub new
         }
     }
 
-    $self->{ template_dir } = tmpnam();
-    $self->{ cache_dir }    = $self->{ template_dir } . '.cache';
+    %temp_options = (
+        TMPDIR   => 1,
+        );
+    $temp_options{ CLEANUP } = 0 if $self->{ options }->{ keep_tmp_dirs };
+
+    $self->{ file_temp } =
+        File::Temp->newdir( 'benchmark_XXXX', %temp_options )
+        or die "Unable to create File::Temp";
+
+    $self->{ template_dir } = File::Spec->catfile(
+        $self->{ file_temp }->dirname(),
+        'templates',
+        );
+    $self->{ cache_dir }    = File::Spec->catfile(
+        $self->{ file_temp }->dirname(),
+        'caches',
+        );
     #  TODO: failure check.
-    mkpath( $self->{ template_dir } );
-    mkpath( $self->{ cache_dir } );
+    mkpath( $self->{ template_dir } )
+        or die "Unable to make template dir '$self->{ template_dir }': $!";
+    mkpath( $self->{ cache_dir } )
+        or die "Unable to make cache dir '$self->{ cache_dir }': $!";
 
     if( $options->{ cache_types_from } )
     {
@@ -537,6 +555,9 @@ sub benchmark
                 delete $self->{ benchmark_functions }->{ $type }->{ $tag };
                 next;
             }
+            #  [rt #59247] Normalize newline endings, some template engines
+            #  produce UNIX and some Windows line-endings when on Windows.
+            $output =~ s/\r//g if $output;
             push @outputs, [ $type, $tag, $output ];
             $reference = $#outputs if $tag eq $reference_preference;
         }
@@ -578,20 +599,24 @@ sub benchmark
         failures => [],
         };
     $result->{ errors } = $errors if %{$errors};
-    foreach my $output ( @outputs )
-    {
-        push @{$result->{ failures }},
-            {
-                type   => $output->[ 0 ],
-                tag    => $output->[ 1 ],
-                output => defined( $output->[ 2 ] ) ?
-                          $output->[ 2 ] : "[no content returned]\n",
-            }
-            if !defined( $output->[ 2 ] ) or
-               $output->[ 2 ] ne $result->{ reference }->{ output };
-    }
 
-    return( $result ) unless $#{$result->{ failures }} == -1;
+    unless( $self->{ options }->{ skip_output_compare } )
+    {
+        foreach my $output ( @outputs )
+        {
+            push @{$result->{ failures }},
+                {
+                    type   => $output->[ 0 ],
+                    tag    => $output->[ 1 ],
+                    output => defined( $output->[ 2 ] ) ?
+                              $output->[ 2 ] : "[no content returned]\n",
+                }
+                if !defined( $output->[ 2 ] ) or
+                   $output->[ 2 ] ne $result->{ reference }->{ output };
+        }
+
+        return( $result ) unless $#{$result->{ failures }} == -1;
+    }
 
     #  OK, all template output matched, time to do the benchmarks.
 
@@ -639,8 +664,9 @@ sub DESTROY
     }
     else
     {
-        rmtree( $self->{ cache_dir } )    if $self->{ cache_dir };
-        rmtree( $self->{ template_dir } ) if $self->{ template_dir };
+        #  Try to make our benchmark closures go out of scope so they
+        #  release any locks before we try to delete the temp dirs...
+        delete $self->{ benchmark_functions };
     }
 }
 
@@ -971,7 +997,7 @@ that the feature should appear in the benchmark template that
 number of times.
 
 This stacks with any C<template_repeats> constructor option, for example
-if you supply C<scalar_variable> => 2 and C<template_repeats> => 30,
+if you supply C<< scalar_variable => 2 >> and C<< template_repeats => 30 >>,
 you will have 60 C<scalar_variable> sections in the benchmark template.
 
 Support for per-feature repeats values was added in 1.04.
@@ -1042,7 +1068,7 @@ function>.
 Please see the section L</"CUSTOM DATASETS"> for more details on
 supplying your own datasets.
 
-This option was added in 1.04.
+The C<dataset> option was added in 1.04.
 
 =item B<style> => I<$string> (default 'none')
 
@@ -1071,6 +1097,25 @@ templates and caches and so forth.
 Because the location is printed, and at an unpredictable time, it may
 mess up your program output, so this option is probably only useful
 while debugging.
+
+=item B<skip_output_compare> => I<0> | I<1> (default 0)
+
+If enabled, this option will skip the sanity check that compares the
+output of the different template engines to ensure that they're producing
+the same output.
+
+This is useful as a workaround if the sanity check is producing a
+mismatch error that you deem to be unimportant.
+
+It is strongly recommended that you never use this option without
+first manually checking the mismatched outputs to be certain that
+they are in fact unimportant.
+
+If you find yourself needing to use this option as a workaround,
+please file a bug report at
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Template-Benchmark>.
+
+The C<skip_output_compare> option was added in 1.05.
 
 =item B<only_plugin> => I<$plugin> (default none)
 
