@@ -1,11 +1,12 @@
-package Template::Benchmark::Engines::TemplateAlloyTT;
+package Template::Benchmark::Engines::TextXslateTT;
 
 use warnings;
 use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-use Template::Alloy;
+use Text::Xslate 0.1047;
+use Text::Xslate::Bridge::TT2;
 
 our $VERSION = '1.05_01';
 
@@ -22,19 +23,19 @@ our %feature_syntaxes = (
         '[% this.is.a.very.deep.hash.structure %]',
     array_loop_value          =>
         '[% FOREACH i IN array_loop %][% i %][% END %]',
-# TODO: ordering?
     hash_loop_value           =>
-        '[% FOREACH k IN hash_loop %][% k.key %]: ' .
-        '[% k.value %][% END %]',
+        undef,
+#        '[% FOREACH k IN hash_loop %][% k.key %]: ' .
+#        '[% k.value %][% END %]',
     records_loop_value        =>
         '[% FOREACH r IN records_loop %][% r.name %]: ' .
         '[% r.age %][% END %]',
     array_loop_template       =>
         '[% FOREACH i IN array_loop %][% i %][% END %]',
-# TODO: ordering?
     hash_loop_template        =>
-        '[% FOREACH k IN hash_loop %][% k.key %]: ' .
-        '[% k.value %][% END %]',
+        undef,
+#        '[% FOREACH k IN hash_loop %][% k.key %]: ' .
+#        '[% k.value %][% END %]',
     records_loop_template     =>
         '[% FOREACH r IN records_loop %][% r.name %]: ' .
         '[% r.age %][% END %]',
@@ -65,31 +66,33 @@ our %feature_syntaxes = (
         'variable_expression_a - variable_expression_b ) / ' .
         'variable_expression_b %]',
     constant_function         =>
-#  TODO: Hmm, this doesn't work, ideas anyone?
-#        q{[% 'this has a substring.'.substr( 11, 9 ) %]},
-        undef,
+        q{[% 'this has a substring.'.substr( 11, 9 ) %]},
+#        undef,
     variable_function         =>
         '[% variable_function_arg.substr( 4, 2 ) %]',
     );
 
 sub syntax_type { return( 'mini-language' ); }
-sub pure_perl { return( 1 ); }
+sub pure_perl
+{
+    return( 1 ) if $ENV{ XSLATE } and $ENV{ XSLATE } =~ / \b pp \b /xms;
+    return( 0 );
+}
 
 sub benchmark_descriptions
 {
+    if( __PACKAGE__->pure_perl() )
+    {
+        return( {
+            TeXsTTPP  =>
+                "Text::Xslate::PP ($Text::Xslate::PP::VERSION) " .
+                    "in Template::Toolkit mode",
+            } );
+    }
     return( {
-        TATT    =>
-            "Template::Alloy ($Template::Alloy::VERSION) in " .
-            "Template::Toolkit mode",
-        TATT_S  =>
-            "Template::Alloy ($Template::Alloy::VERSION) in " .
-            "Template::Toolkit mode (using process_simple())",
-        TATT_P  =>
-            "Template::Alloy ($Template::Alloy::VERSION) in " .
-            "Template::Toolkit mode (compile to perl)",
-        TATT_PS =>
-            "Template::Alloy ($Template::Alloy::VERSION) in " .
-            "Template::Toolkit mode (compile to perl, using process_simple())",
+        TeXsTT    =>
+            "Text::Xslate ($Text::Xslate::VERSION) " .
+                "in Template::Toolkit mode",
         } );
 }
 
@@ -98,16 +101,15 @@ sub benchmark_functions_for_uncached_string
     my ( $self ) = @_;
 
     return( {
-        TATT =>
+        ( __PACKAGE__->pure_perl() ? 'TeXsTTPP' : 'TeXsTT' ) =>
             sub
             {
-                my $t = Template::Alloy->new(
-                    VARIABLES      => $_[ 1 ],
-                    CACHE_STR_REFS => 0,
+                my $t = Text::Xslate->new(
+                    syntax => 'TTerse',
+                    module => [ qw/Text::Xslate::Bridge::TT2/ ],
+                    cache  => 0,
                     );
-                my $out = '';
-                $t->process( \$_[ 0 ], $_[ 2 ], \$out );
-                $out;
+                $t->render_string( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -115,8 +117,23 @@ sub benchmark_functions_for_uncached_string
 sub benchmark_functions_for_uncached_disk
 {
     my ( $self, $template_dir ) = @_;
+    my ( @template_dirs );
 
-    return( undef );
+    @template_dirs = ( $template_dir );
+
+    return( {
+        ( __PACKAGE__->pure_perl() ? 'TeXsTTPP' : 'TeXsTT' ) =>
+            sub
+            {
+                my $t = Text::Xslate->new(
+                    syntax => 'TTerse',
+                    module => [ qw/Text::Xslate::Bridge::TT2/ ],
+                    path   => \@template_dirs,
+                    cache  => 0,
+                    );
+                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+            },
+        } );
 }
 
 sub benchmark_functions_for_disk_cache
@@ -127,55 +144,17 @@ sub benchmark_functions_for_disk_cache
     @template_dirs = ( $template_dir );
 
     return( {
-        TATT =>
+        ( __PACKAGE__->pure_perl() ? 'TeXsTTPP' : 'TeXsTT' ) =>
             sub
             {
-                my $t = Template::Alloy->new(
-                    VARIABLES    => $_[ 1 ],
-                    INCLUDE_PATH => \@template_dirs,
-                    COMPILE_DIR  => $cache_dir,
+                my $t = Text::Xslate->new(
+                    syntax    => 'TTerse',
+                    module    => [ qw/Text::Xslate::Bridge::TT2/ ],
+                    path      => \@template_dirs,
+                    cache_dir => $cache_dir,
+                    cache     => 2,
                     );
-                my $out = '';
-                $t->process( $_[ 0 ], $_[ 2 ], \$out );
-                $out;
-            },
-        TATT_S =>
-            sub
-            {
-                my $t = Template::Alloy->new(
-                    INCLUDE_PATH => \@template_dirs,
-                    COMPILE_DIR  => $cache_dir,
-                    );
-                my $out = '';
-                $t->process_simple( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} },
-                    \$out );
-                $out;
-            },
-        TATT_P =>
-            sub
-            {
-                my $t = Template::Alloy->new(
-                    VARIABLES    => $_[ 1 ],
-                    INCLUDE_PATH => \@template_dirs,
-                    COMPILE_DIR  => $cache_dir,
-                    COMPILE_PERL => 1,
-                    );
-                my $out = '';
-                $t->process( $_[ 0 ], $_[ 2 ], \$out );
-                $out;
-            },
-        TATT_PS =>
-            sub
-            {
-                my $t = Template::Alloy->new(
-                    INCLUDE_PATH => \@template_dirs,
-                    COMPILE_DIR  => $cache_dir,
-                    COMPILE_PERL => 1,
-                    );
-                my $out = '';
-                $t->process_simple( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} },
-                    \$out );
-                $out;
+                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -197,59 +176,22 @@ sub benchmark_functions_for_memory_cache
 sub benchmark_functions_for_instance_reuse
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
-    my ( $ta, $ta_s, $ta_p, $ta_ps, @template_dirs );
+    my ( @template_dirs, $t );
 
     @template_dirs = ( $template_dir );
 
-    $ta = Template::Alloy->new(
-        INCLUDE_PATH => \@template_dirs,
-        COMPILE_DIR  => $cache_dir,
-        );
-    $ta_s = Template::Alloy->new(
-        INCLUDE_PATH => \@template_dirs,
-        COMPILE_DIR  => $cache_dir,
-        );
-    $ta_p = Template::Alloy->new(
-        INCLUDE_PATH => \@template_dirs,
-        COMPILE_DIR  => $cache_dir,
-        COMPILE_PERL => 1,
-        );
-    $ta_ps = Template::Alloy->new(
-        INCLUDE_PATH => \@template_dirs,
-        COMPILE_DIR  => $cache_dir,
-        COMPILE_PERL => 1,
-        );
-
     return( {
-        TATT =>
+        ( __PACKAGE__->pure_perl() ? 'TeXsTTPP' : 'TeXsTT' ) =>
             sub
             {
-                my $out = '';
-                $ta->process( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
-                $out;
-            },
-        TATT_S =>
-            sub
-            {
-                my $out = '';
-                $ta_s->process_simple( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} },
-                    \$out );
-                $out;
-            },
-        TATT_P =>
-            sub
-            {
-                my $out = '';
-                $ta_p->process( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
-                $out;
-            },
-        TATT_PS =>
-            sub
-            {
-                my $out = '';
-                $ta_ps->process_simple( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} },
-                    \$out );
-                $out;
+                $t = Text::Xslate->new(
+                    syntax    => 'TTerse',
+                    module    => [ qw/Text::Xslate::Bridge::TT2/ ],
+                    path      => \@template_dirs,
+                    cache_dir => $cache_dir,
+                    cache     => 2,
+                    ) unless $t;
+                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -262,17 +204,26 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::TemplateAlloyTT - Template::Benchmark plugin for Template::Alloy in Template::Toolkit mode.
+Template::Benchmark::Engines::TextXslateTT - Template::Benchmark plugin for Text::Xslate in Template::Toolkit mode.
 
 =head1 SYNOPSIS
 
 Provides benchmark functions and template feature syntaxes to allow
-L<Template::Benchmark> to benchmark the L<Template::Alloy> template
-engine running in L<Template::Toolkit> emulation mode.
+L<Template::Benchmark> to benchmark the L<Text::Xslate> template
+engine using the L<Text::Xslate::Syntax::TTerse> dialect and
+L<Text::Xslate::Bridge::TT2> for L<Template::Toolkit> compatability.
 
-=head1 AUTHOR
+Because L<Text::Xslate> and L<Text::Xslate::PP> trample over each other
+if they're used in the same program there's no way to safely provide a
+C<TextXslateTTPP> plugin, however if you set the XSLATE environment variable
+to C<pp> as documented in L<Text::Xslate::PP>, this plugin will detect
+that you're using the pure-perl backend.
+
+=head1 AUTHORS
 
 Sam Graham, C<< <libtemplate-benchmark-perl at illusori.co.uk> >>
+
+Patches contributed by: Goro Fuji.
 
 =head1 BUGS
 
@@ -284,7 +235,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Template::Benchmark::Engines::TemplateAlloyTT
+    perldoc Template::Benchmark::Engines::TextXslateTT
 
 
 You can also look for information at:
