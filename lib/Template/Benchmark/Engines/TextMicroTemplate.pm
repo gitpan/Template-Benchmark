@@ -8,7 +8,7 @@ use base qw/Template::Benchmark::Engine/;
 use Text::MicroTemplate;
 use Text::MicroTemplate::File;
 
-our $VERSION = '1.06';
+our $VERSION = '1.06_01';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -150,7 +150,7 @@ sub benchmark_functions_for_memory_cache
                 my $t = Text::MicroTemplate::File->new(
                     include_path => [ $template_dir ],
                     escape_func  => undef,
-                    use_cache    => 1,
+                    use_cache    => 2,
                     );
                 $t->render_file( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
@@ -160,8 +160,20 @@ sub benchmark_functions_for_memory_cache
 sub benchmark_functions_for_instance_reuse
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
+    my ( $t );
 
-    return( undef );
+    return( {
+        TeMT =>
+            sub
+            {
+                $t ||= Text::MicroTemplate::File->new(
+                    include_path => [ $template_dir ],
+                    escape_func  => undef,
+                    use_cache    => 2,
+                    );
+                $t->render_file( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+            },
+        } );
 }
 
 1;

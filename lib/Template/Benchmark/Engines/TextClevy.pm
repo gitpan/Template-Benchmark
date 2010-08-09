@@ -1,12 +1,11 @@
-package Template::Benchmark::Engines::TextXslate;
+package Template::Benchmark::Engines::TextClevy;
 
 use warnings;
 use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-#  0.1052 fixed a bug about literal colons
-use Text::Xslate 0.1052;
+use Text::Clevy;
 
 our $VERSION = '1.06_01';
 
@@ -14,59 +13,67 @@ our %feature_syntaxes = (
     literal_text              =>
         join( "\n", ( join( ' ', ( 'foo' ) x 12 ) ) x 5 ),
     scalar_variable           =>
-        '<:= $scalar_variable :>',
+        '{$scalar_variable}',
     hash_variable_value       =>
-        '<:= $hash_variable.hash_value_key :>',
+        '{$hash_variable.hash_value_key}',
     array_variable_value      =>
-        '<:= $array_variable[ 2 ] :>',
+        '{$array_variable[2]}',
     deep_data_structure_value =>
-        '<:= $this.is.a.very.deep.hash.structure :>',
+        '{$this.is.a.very.deep.hash.structure}',
     array_loop_value          =>
-        '<: for $array_loop ->($i) { :><:= $i :><: } :>',
+        '{foreach item=i from=$array_loop}{$i}{/foreach}',
     hash_loop_value           =>
-        '<: for $hash_loop.keys() ->($k) { :><:= $k :>: ' .
-        '<:= $hash_loop[ $k ] :><: } :>',
+#  'key' attribute not yet implemented in Text::Clevy.
+        undef,
+#        '{foreach key=k item=v from=$hash_loop}{$k}: ' .
+#        '{$v}{/foreach}',
     records_loop_value        =>
-        '<: for $records_loop ->($r) { :><:= $r.name :>: ' .
-        '<:= $r.age :><: } :>',
+        '{foreach item=r from=$records_loop}{$r.name}: ' .
+        '{$r.age}{/foreach}',
     array_loop_template       =>
-        '<: for $array_loop ->($i) { :><:= $i :><: } :>',
+        '{foreach item=i from=$array_loop}{$i}{/foreach}',
     hash_loop_template        =>
-        '<: for $hash_loop.keys() ->($k) { :><:= $k :>: ' .
-        '<:= $hash_loop[ $k ] :><: } :>',
+#  'key' attribute not yet implemented in Text::Clevy.
+        undef,
+#        '{foreach key=k item=v from=$hash_loop}{$k}: ' .
+#        '{$v}{/foreach}',
     records_loop_template     =>
-        '<: for $records_loop ->($r) { :><:= $r.name :>: ' .
-        '<:= $r.age :><: } :>',
+        '{foreach item=r from=$records_loop}{$r.name}: ' .
+        '{$r.age}{/foreach}',
     constant_if_literal       =>
-        '<: if 1 { :>true<: } :>',
+        '{if 1}true{/if}',
     variable_if_literal       =>
-        '<: if $variable_if { :>true<: } :>',
+        '{if $variable_if}true{/if}',
     constant_if_else_literal  =>
-        '<: if 1 { :>true<: } else { :>false<: } :>',
+        '{if 1}true{else}false{/if}',
     variable_if_else_literal  =>
-        '<: if $variable_if_else { :>true<: } else { :>false<: } :>',
+        '{if $variable_if_else}true{else}false{/if}',
     constant_if_template      =>
-        '<: if 1 { :><:= $template_if_true :><: } :>',
+        '{if 1}{$template_if_true}{/if}',
     variable_if_template      =>
-        '<: if $variable_if { :><:= $template_if_true :><: } :>',
+        '{if $variable_if}{$template_if_true}{/if}',
     constant_if_else_template =>
-        '<: if 1 { :><:= $template_if_true :><: } else { :>' .
-        '<:= $template_if_false :><: } :>',
+        '{if 1}{$template_if_true}{else}' .
+        '{$template_if_false}{/if}',
     variable_if_else_template =>
-        '<: if $variable_if_else { :><:= $template_if_true :><: } else { :>' .
-        '<:= $template_if_false :><: } :>',
+        '{if $variable_if_else}{$template_if_true}{else}' .
+        '{$template_if_false}{/if}',
     constant_expression       =>
-        '<:= 10 + 12 :>',
+        '{10 + 12}',
     variable_expression       =>
-        '<:= $variable_expression_a * $variable_expression_b :>',
+        '{$variable_expression_a * $variable_expression_b}',
     complex_variable_expression =>
-        '<:= ( ( $variable_expression_a * $variable_expression_b ) + ' .
+        '{( ( $variable_expression_a * $variable_expression_b ) + ' .
         '$variable_expression_a - $variable_expression_b ) / ' .
-        '$variable_expression_b :>',
+        '$variable_expression_b}',
     constant_function         =>
-        q{<:= substr( 'this has a substring.', 11, 9 ) :>},
+#  TODO: functions in Smarty have named param, no idea how this links to Xslate
+        undef,
+#        q[{substr( 'this has a substring.', 11, 9 )}],
     variable_function         =>
-        '<:= substr( $variable_function_arg, 4, 2 ) :>',
+#  TODO: functions in Smarty have named param, no idea how this links to Xslate
+        undef,
+#        '{substr( $variable_function_arg, 4, 2 )}',
     );
 
 sub syntax_type { return( 'mini-language' ); }
@@ -81,13 +88,13 @@ sub benchmark_descriptions
     if( __PACKAGE__->pure_perl() )
     {
         return( {
-            TeXsPP  =>
-                "Text::Xslate::PP ($Text::Xslate::PP::VERSION)",
+            TeClevyPP  =>
+                "Text::Clevy ($Text::Clevy::VERSION) in Pure Perl mode",
             } );
     }
     return( {
-        TeXs    =>
-            "Text::Xslate ($Text::Xslate::VERSION)",
+        TeClevy    =>
+            "Text::Clevy ($Text::Clevy::VERSION) in XS mode",
         } );
 }
 
@@ -96,12 +103,11 @@ sub benchmark_functions_for_uncached_string
     my ( $self ) = @_;
 
     return( {
-        ( __PACKAGE__->pure_perl() ? 'TeXsPP' : 'TeXs' ) =>
+        ( __PACKAGE__->pure_perl() ? 'TeClevyPP' : 'TeClevy' ) =>
             sub
             {
-                my $t = Text::Xslate->new(
+                my $t = Text::Clevy->new(
                     cache  => 0,
-                    #  TODO: Probably a better way to achieve this.
                     function  => {
                         substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
                         },
@@ -119,13 +125,12 @@ sub benchmark_functions_for_uncached_disk
     @template_dirs = ( $template_dir );
 
     return( {
-        ( __PACKAGE__->pure_perl() ? 'TeXsPP' : 'TeXs' ) =>
+        ( __PACKAGE__->pure_perl() ? 'TeClevyPP' : 'TeClevy' ) =>
             sub
             {
-                my $t = Text::Xslate->new(
-                    path  => \@template_dirs,
-                    cache => 0,
-                    #  TODO: Probably a better way to achieve this.
+                my $t = Text::Clevy->new(
+                    path   => \@template_dirs,
+                    cache  => 0,
                     function  => {
                         substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
                         },
@@ -143,14 +148,13 @@ sub benchmark_functions_for_disk_cache
     @template_dirs = ( $template_dir );
 
     return( {
-        ( __PACKAGE__->pure_perl() ? 'TeXsPP' : 'TeXs' ) =>
+        ( __PACKAGE__->pure_perl() ? 'TeClevyPP' : 'TeClevy' ) =>
             sub
             {
-                my $t = Text::Xslate->new(
+                my $t = Text::Clevy->new(
                     path      => \@template_dirs,
                     cache_dir => $cache_dir,
                     cache     => 2,
-                    #  TODO: Probably a better way to achieve this.
                     function  => {
                         substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
                         },
@@ -182,14 +186,13 @@ sub benchmark_functions_for_instance_reuse
     @template_dirs = ( $template_dir );
 
     return( {
-        ( __PACKAGE__->pure_perl() ? 'TeXsPP' : 'TeXs' ) =>
+        ( __PACKAGE__->pure_perl() ? 'TeClevyPP' : 'TeClevy' ) =>
             sub
             {
-                $t = Text::Xslate->new(
+                $t = Text::Clevy->new(
                     path      => \@template_dirs,
                     cache_dir => $cache_dir,
                     cache     => 2,
-                    #  TODO: Probably a better way to achieve this.
                     function  => {
                         substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
                         },
@@ -207,25 +210,24 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::TextXslate - Template::Benchmark plugin for Text::Xslate.
+Template::Benchmark::Engines::TextClevy - Template::Benchmark plugin for Text::Clevy.
 
 =head1 SYNOPSIS
 
 Provides benchmark functions and template feature syntaxes to allow
-L<Template::Benchmark> to benchmark the L<Text::Xslate> template
+L<Template::Benchmark> to benchmark the L<Text::Clevy> template
 engine.
 
-Because L<Text::Xslate> and L<Text::Xslate::PP> trample over each other
+Because L<Text::Clevy> is implemented using L<Text::Xslate> and because
+L<Text::Xslate> and L<Text::Xslate::PP> trample over each other
 if they're used in the same program there's no way to safely provide a
-C<TextXslatePP> plugin, however if you set the XSLATE environment variable
+C<TextClevyPP> plugin, however if you set the XSLATE environment variable
 to C<pp> as documented in L<Text::Xslate::PP>, this plugin will detect
 that you're using the pure-perl backend.
 
 =head1 AUTHORS
 
 Sam Graham, C<< <libtemplate-benchmark-perl at illusori.co.uk> >>
-
-Patches contributed by: Goro Fuji.
 
 =head1 BUGS
 
@@ -237,7 +239,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Template::Benchmark::Engines::TextXslate
+    perldoc Template::Benchmark::Engines::TextClevy
 
 
 You can also look for information at:
