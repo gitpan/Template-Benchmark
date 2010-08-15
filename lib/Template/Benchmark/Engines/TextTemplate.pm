@@ -9,7 +9,7 @@ use Text::Template;
 
 use File::Spec;
 
-our $VERSION = '1.07';
+our $VERSION = '1.07_01';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -88,7 +88,7 @@ sub benchmark_functions_for_uncached_string
                     TYPE              => 'STRING',
                     SOURCE            => $_[ 0 ],
                     );
-                $t->fill_in( HASH => [ $_[ 1 ], $_[ 2 ] ] );
+                \$t->fill_in( HASH => [ $_[ 1 ], $_[ 2 ] ] );
             },
         } );
 }
@@ -105,7 +105,7 @@ sub benchmark_functions_for_uncached_disk
                     TYPE   => 'FILE',
                     SOURCE => File::Spec->catfile( $template_dir, $_[ 0 ] ),
                     );
-                $t->fill_in( HASH => [ $_[ 1 ], $_[ 2 ] ] );
+                \$t->fill_in( HASH => [ $_[ 1 ], $_[ 2 ] ] );
             },
         } );
 }
@@ -145,7 +145,7 @@ sub benchmark_functions_for_instance_reuse
                     SOURCE => File::Spec->catfile( $template_dir, $_[ 0 ] ),
                     )
                     unless $t;
-                $t->fill_in( HASH => [ $_[ 1 ], $_[ 2 ] ] );
+                \$t->fill_in( HASH => [ $_[ 1 ], $_[ 2 ] ] );
             },
         } );
 }

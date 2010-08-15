@@ -1,11 +1,11 @@
-package Template::Benchmark::Engines::NTSTemplate;
+package Template::Benchmark::Engines::ParseTemplate;
 
 use warnings;
 use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-use NTS::Template;
+use Parse::Template;
 
 our $VERSION = '1.07_01';
 
@@ -13,65 +13,83 @@ our %feature_syntaxes = (
     literal_text              =>
         join( "\n", ( join( ' ', ( 'foo' ) x 12 ) ) x 5 ),
     scalar_variable           =>
-        '[% scalar_variable %]',
+        '%% $scalar_variable %%',
     hash_variable_value       =>
-        '[% hash_variable.hash_value_key %]',
+        '%% $hash_variable{hash_value_key} %%',
     array_variable_value      =>
-        undef,
+        '%% $array_variable[ 2 ] %%',
     deep_data_structure_value =>
-        '[% this.is.a.very.deep.hash.structure %]',
+        '%% $this{is}{a}{very}{deep}{hash}{structure} %%',
     array_loop_value          =>
-        '[% FOREACH i = array_loop %][% i %][% END %]',
+        q|%% join( '', @array_loop ) %%|,
     hash_loop_value           =>
-        undef,
+        q|%% join( '', map { $_ . ': ' . $hash_loop{$_} } | .
+        q|sort( keys( %hash_loop ) ) ) %%|,
     records_loop_value        =>
-        '[% FOREACH r = records_loop %][% r.name %]: ' .
-        '[% r.age %][% END %]',
+        q|%% join( '', map { $_->{ name } . ': ' . $_->{ age } } | .
+        q|@records_loop ) %%|,
     array_loop_template       =>
-        '[% FOREACH i = array_loop %][% i %][% END %]',
+        #  Can't be done under the paradigm of Template::Benchmark,
+        #  each content block needs to a separate template.
+        undef,
     hash_loop_template        =>
+        #  Can't be done under the paradigm of Template::Benchmark,
+        #  each content block needs to a separate template.
         undef,
     records_loop_template     =>
-        '[% FOREACH r = records_loop %][% r.name %]: ' .
-        '[% r.age %][% END %]',
+        #  Can't be done under the paradigm of Template::Benchmark,
+        #  each content block needs to a separate template.
+        undef,
     constant_if_literal       =>
-        '[% IF 1 %]true[% END %]',
+        q|%% if( 1 ) { 'true' } %%|,
     variable_if_literal       =>
-        '[% IF variable_if %]true[% END %]',
+        q|%% if( $variable_if ) { 'true' } %%|,
     constant_if_else_literal  =>
-        '[% IF 1 %]true[% ELSE %]false[% END %]',
+        q|%% if( 1 ) { 'true' } else { 'false' } %%|,
     variable_if_else_literal  =>
-        '[% IF variable_if_else %]true[% ELSE %]false[% END %]',
+        q|%% if( $variable_if_else ) { 'true' } else { | .
+        q|'false' } %%|,
     constant_if_template      =>
-        '[% IF 1 %][% template_if_true %][% END %]',
+        #  Can't be done under the paradigm of Template::Benchmark,
+        #  each content block needs to a separate template.
+        undef,
     variable_if_template      =>
-        '[% IF variable_if %][% template_if_true %][% END %]',
+        #  Can't be done under the paradigm of Template::Benchmark,
+        #  each content block needs to a separate template.
+        undef,
     constant_if_else_template =>
-        '[% IF 1 %][% template_if_true %][% ELSE %]' .
-        '[% template_if_false %][% END %]',
+        #  Can't be done under the paradigm of Template::Benchmark,
+        #  each content block needs to a separate template.
+        undef,
     variable_if_else_template =>
-        '[% IF variable_if_else %][% template_if_true %][% ELSE %]' .
-        '[% template_if_false %][% END %]',
+        #  Can't be done under the paradigm of Template::Benchmark,
+        #  each content block needs to a separate template.
+        undef,
     constant_expression       =>
-        undef,
+        '%% 10 + 12 %%',
     variable_expression       =>
-        undef,
+        '%% $variable_expression_a * ' .
+        '$variable_expression_b %%',
     complex_variable_expression =>
-        undef,
+        '%% ( ( $variable_expression_a * ' .
+        '$variable_expression_b ) + ' .
+        '$variable_expression_a - ' .
+        '$variable_expression_b ) / ' .
+        '$variable_expression_b %%',
     constant_function         =>
-        undef,
+        q{%% substr( 'this has a substring.', 11, 9 ) %%},
     variable_function         =>
-        undef,
+        '%% substr( $variable_function_arg, 4, 2 ) %%',
     );
 
-sub syntax_type { return( 'mini-language' ); }
+sub syntax_type { return( 'embedded-perl' ); }
 sub pure_perl { return( 1 ); }
 
 sub benchmark_descriptions
 {
     return( {
-        NT    =>
-            "NTS::Template ($NTS::Template::VERSION)",
+        PT    =>
+            "Parse::Template ($Parse::Template::VERSION)",
         } );
 }
 
@@ -79,29 +97,25 @@ sub benchmark_functions_for_uncached_string
 {
     my ( $self ) = @_;
 
-    return( undef );
+    return( {
+        PT =>
+            sub
+            {
+                my $t = Parse::Template->new(
+                    TOP => $_[ 0 ],
+                    );
+                $t->env( %{$_[ 1 ]} );
+                $t->env( %{$_[ 2 ]} );
+                \$t->eval( 'TOP' );
+            },
+        } );
 }
 
 sub benchmark_functions_for_uncached_disk
 {
     my ( $self, $template_dir ) = @_;
 
-    return( {
-        NT =>
-            sub
-            {
-                my $t = NTS::Template->new();
-                \$t->process( {
-                    templ_dir   => $template_dir,
-                    templ_file  => $_[ 0 ],
-                    templ_vars  => { %{$_[ 1 ]} , %{$_[ 2 ]} },
-                    templ_extra => {
-#                        source => 1,
-                        oreturn => 1,
-                        },
-                    } );
-            },
-        } );
+    return( undef );
 }
 
 sub benchmark_functions_for_disk_cache
@@ -140,32 +154,25 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::NTSTemplate - Template::Benchmark plugin for NTS::Template.
+Template::Benchmark::Engines::ParseTemplate - Template::Benchmark plugin for Parse::Template.
 
 =head1 SYNOPSIS
 
 Provides benchmark functions and template feature syntaxes to allow
-L<Template::Benchmark> to benchmark the L<NTS::Template> template
+L<Template::Benchmark> to benchmark the L<Parse::Template> template
 engine.
-
-=head1 KNOWN ISSUES AND BUGS
-
-=over
-
-=item C<literal_text> can fail if only enabled feature
-
-L<NTS::Template> appears to behave differently if there are no
-I<template variables> to replace, compared to if there is only
-literal-text.
-
-The benchmark may not give the expected output in these
-situations.
-
-=back
 
 =head1 AUTHOR
 
 Sam Graham, C<< <libtemplate-benchmark-perl at illusori.co.uk> >>
+
+=head1 KNOWN BUGS AND ISSUES
+
+Because of the paradigm of L<Parse::Template> to define sub-blocks of
+the template separately from the main template, it isn't possible to
+provide support for the C<_template> forms of the block and if features
+under L<Template::Benchmark>, which expects them to be inline within
+the main template.
 
 =head1 BUGS
 
@@ -177,7 +184,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Template::Benchmark::Engines::NTSTemplate
+    perldoc Template::Benchmark::Engines::ParseTemplate
 
 
 You can also look for information at:

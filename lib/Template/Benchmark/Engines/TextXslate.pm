@@ -8,7 +8,7 @@ use base qw/Template::Benchmark::Engine/;
 #  0.1052 fixed a bug about literal colons
 use Text::Xslate 0.1052;
 
-our $VERSION = '1.07';
+our $VERSION = '1.07_01';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -106,7 +106,7 @@ sub benchmark_functions_for_uncached_string
                         substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
                         },
                     );
-                $t->render_string( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render_string( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -130,7 +130,7 @@ sub benchmark_functions_for_uncached_disk
                         substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
                         },
                     );
-                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -155,7 +155,7 @@ sub benchmark_functions_for_disk_cache
                         substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
                         },
                     );
-                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -194,7 +194,7 @@ sub benchmark_functions_for_instance_reuse
                         substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
                         },
                     ) unless $t;
-                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }

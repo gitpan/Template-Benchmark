@@ -9,7 +9,7 @@ use Text::MicroMason;
 
 use File::Spec;
 
-our $VERSION = '1.07';
+our $VERSION = '1.07_01';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -86,7 +86,7 @@ sub benchmark_functions_for_uncached_string
             sub
             {
                 my $t = Text::MicroMason::Base->new( -TextTemplate );
-                $t->execute(
+                \$t->execute(
                     text => $_[ 0 ],
                     ( %{$_[ 1 ]}, %{$_[ 2 ]} ) );
             },
@@ -102,7 +102,7 @@ sub benchmark_functions_for_uncached_disk
             sub
             {
                 my $t = Text::MicroMason::Base->new( -TextTemplate );
-                $t->execute(
+                \$t->execute(
                     file => File::Spec->catfile( $template_dir, $_[ 0 ] ),
                     ( %{$_[ 1 ]}, %{$_[ 2 ]} ) );
             },
@@ -144,7 +144,7 @@ sub benchmark_functions_for_instance_reuse
                     file => File::Spec->catfile( $template_dir, $_[ 0 ] )
                     )
                     unless $t;
-                $t->( ( %{$_[ 1 ]}, %{$_[ 2 ]} ) );
+                \$t->( ( %{$_[ 1 ]}, %{$_[ 2 ]} ) );
             },
         } );
 }

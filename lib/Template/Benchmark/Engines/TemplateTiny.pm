@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use Template::Tiny;
 
-our $VERSION = '1.07';
+our $VERSION = '1.07_01';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -85,7 +85,7 @@ sub benchmark_functions_for_uncached_string
                 my $t = Template::Tiny->new();
                 my $out;
                 $t->process( \$_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
-                $out || $t->error();
+                \$out;
             },
         } );
 }

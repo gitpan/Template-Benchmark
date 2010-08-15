@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use HTML::Template::JIT;
 
-our $VERSION = '1.07';
+our $VERSION = '1.07_01';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -124,7 +124,7 @@ sub benchmark_functions_for_memory_cache
                 $t->param( $_[ 1 ] );
                 $t->param( $_[ 2 ] );
                 my $out = $t->output();
-                $out;
+                \$out;
             },
         } );
 }

@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use Text::ClearSilver;
 
-our $VERSION = '1.07';
+our $VERSION = '1.07_01';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -94,7 +94,7 @@ sub benchmark_functions_for_uncached_string
                 my $t = Text::ClearSilver->new();
                 my $out = '';
                 $t->process( \$_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
-                $out;
+                \$out;
             },
         } );
 }
@@ -115,7 +115,7 @@ sub benchmark_functions_for_uncached_disk
                     );
                 my $out = '';
                 $t->process( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
-                $out;
+                \$out;
             },
         } );
 }
@@ -158,7 +158,7 @@ sub benchmark_functions_for_instance_reuse
             {
                 my $out = '';
                 $t->process( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
-                $out;
+                \$out;
             },
         } );
 }
