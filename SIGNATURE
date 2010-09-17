@@ -15,45 +15,45 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 c49e2ec1fe759df0c69ae77804f6d5260ca6a442 Build.PL
-SHA1 5d18586b2718cb897bbd4bc3ce3a91664c36a391 Changes
+SHA1 e0c6cfec8db8fa705264352edf28f490c5114886 Changes
 SHA1 6f1fcf86ac3ba8c7ebc71beecd4c6e36ac192060 MANIFEST
-SHA1 08f433ac4d8c03041f01d58b50d63f6ea24fc547 META.yml
+SHA1 dffaa23f9a5b18c900a6f4d4d789fd4e4cbe511f META.yml
 SHA1 068c08627fe69dc0eca201198951a66cf4c30c89 README
-SHA1 21df36f1a483634b306b2e96fd094663f9a52150 lib/Template/Benchmark.pm
-SHA1 471fa57837ddc08b28d2197e47b708011c957cbb lib/Template/Benchmark/Engine.pm
-SHA1 f7a7178cf1573f85d701e65e0ce615c3218ca482 lib/Template/Benchmark/Engines/HTMLMason.pm
-SHA1 e2844ac0d6a511895db9cc3c4e6ef46e96aa9782 lib/Template/Benchmark/Engines/HTMLTemplate.pm
-SHA1 94e38dfee26c3d73bacae071c40c54ef7a4d962c lib/Template/Benchmark/Engines/HTMLTemplateCompiled.pm
-SHA1 4170a1b6ce55839a78e9f5b959348ac5617ae880 lib/Template/Benchmark/Engines/HTMLTemplateExpr.pm
-SHA1 d9871ad2fb3754c9c3e357e5327fad5f7f4022df lib/Template/Benchmark/Engines/HTMLTemplateJIT.pm
-SHA1 e25b73976d4e5f6d52c8ec9c150365c0019f7c3f lib/Template/Benchmark/Engines/HTMLTemplatePro.pm
-SHA1 c3dcc80a723d00e5925129bb41733e3f51e169fe lib/Template/Benchmark/Engines/MojoTemplate.pm
-SHA1 38b6a7154bf085db734c6dffbd67e886bfa5832d lib/Template/Benchmark/Engines/NTSTemplate.pm
-SHA1 b61a47f1e7fcc838540734a848f868189b5ccd40 lib/Template/Benchmark/Engines/ParseTemplate.pm
-SHA1 ab00d5c9d0fa7161fe8ab89e0d7cbac80524bb7b lib/Template/Benchmark/Engines/TemplateAlloyHT.pm
-SHA1 9ecd65dc67b2793871d8f4dc7cc0dd7c4395d4dd lib/Template/Benchmark/Engines/TemplateAlloyTT.pm
-SHA1 411b6fa69e29f2408dbfff2102963a9ea9ccc793 lib/Template/Benchmark/Engines/TemplateSandbox.pm
-SHA1 1d51f1acda01acffa8260825eb0de43222ec2738 lib/Template/Benchmark/Engines/TemplateTiny.pm
-SHA1 fd6bb909d74d1d61e3a1b357d23bf9a703963f68 lib/Template/Benchmark/Engines/TemplateToolkit.pm
-SHA1 25f4f77f5ebe60df2a8a9ea5ebd3eaf85005aa4e lib/Template/Benchmark/Engines/Tenjin.pm
-SHA1 dc8b3bc695991645c7333616a0d657534c148e33 lib/Template/Benchmark/Engines/TextClearSilver.pm
-SHA1 5121445a4f7894fa6f6a6f09ed6f160d33104112 lib/Template/Benchmark/Engines/TextClevy.pm
-SHA1 6b54db7bb0b1a2fd263460c6480f203b2c482867 lib/Template/Benchmark/Engines/TextMicroMasonHM.pm
-SHA1 5ea677020ed6d05681c2af52e183903cd513a318 lib/Template/Benchmark/Engines/TextMicroMasonTeTe.pm
-SHA1 3c017071bd6eaac923e7cfc989d621e49f314b0a lib/Template/Benchmark/Engines/TextMicroTemplate.pm
-SHA1 228b111dc63493879961ef07ca4cfe20060a3804 lib/Template/Benchmark/Engines/TextMicroTemplateExtended.pm
-SHA1 bc74b0f0eade07d2a6b3eee477f507968c8ccc8c lib/Template/Benchmark/Engines/TextTemplate.pm
-SHA1 bc74b67b98d87dd613a24f7a77fbe92c6f0e4576 lib/Template/Benchmark/Engines/TextTemplateSimple.pm
-SHA1 779a2bf746b98c5c6f13c7df75dfaa2d9dea621b lib/Template/Benchmark/Engines/TextTmpl.pm
-SHA1 693a4970b6ce28339adde191a6ee123e933cd38c lib/Template/Benchmark/Engines/TextXslate.pm
-SHA1 d8d89a77a84f5afac1a4011a6d29c4be504a6f31 lib/Template/Benchmark/Engines/TextXslateTT.pm
+SHA1 59873103e9c1df0b80d750a63972129c41079680 lib/Template/Benchmark.pm
+SHA1 04437cb09babfc801ae79b59d4d67164b1ef7b2f lib/Template/Benchmark/Engine.pm
+SHA1 6ee8d25841838c4903582254dabe6c5a3b94b6f2 lib/Template/Benchmark/Engines/HTMLMason.pm
+SHA1 b06360bcae18777c1aa6e15598dd124d447a451d lib/Template/Benchmark/Engines/HTMLTemplate.pm
+SHA1 c66a654712903ca839bef9bd7b9c890d45806e3a lib/Template/Benchmark/Engines/HTMLTemplateCompiled.pm
+SHA1 0d9626b3babfc19a005727ed47af7d0b48fc4b75 lib/Template/Benchmark/Engines/HTMLTemplateExpr.pm
+SHA1 c5da063319b8022c8a98d6c4b59b440550a2919c lib/Template/Benchmark/Engines/HTMLTemplateJIT.pm
+SHA1 bd49045b7920787c7fc8890ea948bf7ff15fae68 lib/Template/Benchmark/Engines/HTMLTemplatePro.pm
+SHA1 445c0ecd6296450a6c9cd0e1c18c2a917631f218 lib/Template/Benchmark/Engines/MojoTemplate.pm
+SHA1 6c6dc52da0faa53660f4ebc47c4d3ff9a1bd5aba lib/Template/Benchmark/Engines/NTSTemplate.pm
+SHA1 ebb49922d20d179793502946aaeb2226dad849e7 lib/Template/Benchmark/Engines/ParseTemplate.pm
+SHA1 5df35861c8e6b4b94f0cce5dcd656cbf1fae2fec lib/Template/Benchmark/Engines/TemplateAlloyHT.pm
+SHA1 bffd5a7c3bb80b729d7e52c0e6f19e77b0e26e5c lib/Template/Benchmark/Engines/TemplateAlloyTT.pm
+SHA1 53a9ebc0fabd913826736478a47ae74d9abd2d48 lib/Template/Benchmark/Engines/TemplateSandbox.pm
+SHA1 b8efab2c1148f2a4a9a98ff8f4c055f3be6cac9a lib/Template/Benchmark/Engines/TemplateTiny.pm
+SHA1 37c0c03816ea260e47b817edfc1ba63eabbdc315 lib/Template/Benchmark/Engines/TemplateToolkit.pm
+SHA1 95aa9ecc21966f00bfafc74b4f76a33b06f1e055 lib/Template/Benchmark/Engines/Tenjin.pm
+SHA1 4a258c10f894d9a058ed65fcd9d8444e96c97438 lib/Template/Benchmark/Engines/TextClearSilver.pm
+SHA1 aff7a493c3e045ec811a21d872ecbfa99e215ed5 lib/Template/Benchmark/Engines/TextClevy.pm
+SHA1 e0891de5190a6304ab3aaa5dbd28d7f5f4f75a90 lib/Template/Benchmark/Engines/TextMicroMasonHM.pm
+SHA1 aa9a277fef06b03c99b4dbd0cdac2351dbd41665 lib/Template/Benchmark/Engines/TextMicroMasonTeTe.pm
+SHA1 a6f3cdcc9ecf998178894ad75b5f3fadce30ca8a lib/Template/Benchmark/Engines/TextMicroTemplate.pm
+SHA1 9c670e64cfbe07fb25dbd87247ce7cd3e58dfc8f lib/Template/Benchmark/Engines/TextMicroTemplateExtended.pm
+SHA1 e20e7d07ae3be8b05f194665bdf84e96f2254cc0 lib/Template/Benchmark/Engines/TextTemplate.pm
+SHA1 2fcd1d50345d802799fbbebde2edfc234bb7af18 lib/Template/Benchmark/Engines/TextTemplateSimple.pm
+SHA1 7fad1ed624da7680df93f12dce257b9b9ff6db16 lib/Template/Benchmark/Engines/TextTmpl.pm
+SHA1 b2f71dbe196379c9433dc4e4346f88e5259d9b8d lib/Template/Benchmark/Engines/TextXslate.pm
+SHA1 dad58b322354d3196ada76de531bed65e8e4c892 lib/Template/Benchmark/Engines/TextXslateTT.pm
 SHA1 24f83d80b3074d9c27c07340580a8aad3f2ecf8c script/benchmark_template_engines
 SHA1 2a26fa46404a9a16bbe098ceec1bd14b96739c04 t/00-load.t
 SHA1 06cdd006f32e0337890a7da8077412125ed7a39c t/10-class-methods.t
 SHA1 0ede37670c870332a22767ea69d88e49ca0df05b t/15-constructor.t
 SHA1 7b7f930ba2339742bebfad4315f655481b6eed2d t/20-instance-methods.t
-SHA1 8695b2ce8f88a7d3af63efb1edb8069d32d6cb2b t/30-custom-dataset.t
-SHA1 eea2c301953a8633b3917c8ed04d2deaaa14ce46 t/40-per-feature-repeats.t
+SHA1 ac68a49635c8fbc782894234bdd3c339236f36a3 t/30-custom-dataset.t
+SHA1 0dadb295a61b91f64bb68559cfee60d0d782108a t/40-per-feature-repeats.t
 SHA1 3580a041f6a4dbef3b2e0c219992aa9056cf31c8 t/50-script-run.t
 SHA1 03df4f382d22e128d81dabb7752261e8aac2328e xt/release/check-changes.t
 SHA1 00f52da37e4c2c2218acdf60d11392abf11a2a8e xt/release/fixme.t
@@ -66,7 +66,7 @@ SHA1 ed94e1e175f9b467a10d7d64bb80190635ba931a xt/slow/50-script-run-full.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkyQlMsACgkQk0asf7iG0tRhKQCfXKX++/hEoOoj5CVjM3tgOlzA
-7VwAnRh7tAF2HeHqVFmUCCxcGk3o4Rw/
-=+Db9
+iEYEARECAAYFAkyTTRYACgkQk0asf7iG0tRalACfZjOty5pRlhGs91KZC8Q8EJPa
+vAkAoIklndKcyuy2pxBRYMGUDXycvGSK
+=sS0p
 -----END PGP SIGNATURE-----
