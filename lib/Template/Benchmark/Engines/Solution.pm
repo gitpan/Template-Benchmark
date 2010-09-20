@@ -1,16 +1,14 @@
-package Template::Benchmark::Engines::MojoTemplate;
+package Template::Benchmark::Engines::Solution;
 
 use warnings;
 use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-use File::Spec;
-
-use Mojo;
-use Mojo::Template;
-
-use IO::File;
+#  TODO: need 0.000000003 but version numbers weren't bumped.
+#use Solution 0.000000003;
+use Solution 0.000000002;
+use Solution::Template;
 
 our $VERSION = '1.07_05';
 
@@ -18,79 +16,78 @@ our %feature_syntaxes = (
     literal_text              =>
         join( "\n", ( join( ' ', ( 'foo' ) x 12 ) ) x 5 ),
     scalar_variable           =>
-        '<%= $_[0]->{scalar_variable} %>',
+        '{{ scalar_variable }}',
     hash_variable_value       =>
-        '<%= $_[0]->{hash_variable}{hash_value_key} %>',
+        '{{ hash_variable.hash_value_key }}',
     array_variable_value      =>
-        '<%= $_[0]->{array_variable}[ 2 ] %>',
+        '{{ array_variable.2 }}',
     deep_data_structure_value =>
-        '<%= $_[0]->{this}{is}{a}{very}{deep}{hash}{structure} %>',
+        '{{ this.is.a.very.deep.hash.structure }}',
     array_loop_value          =>
-        '<% foreach ( @{$_[0]->{array_loop}} ) { %><%= $_ %><% } %>',
+        '{% for i in array_loop %}{{ i }}{% endfor %}',
     hash_loop_value           =>
-        '<% foreach ( sort( keys( %{$_[0]->{hash_loop}} ) ) ) { %>' .
-        '<%= $_ %>: <%= $_[0]->{hash_loop}{$_} %>' .
-        '<% } %>',
+        undef,
+#  TODO: hashes are unsorted
+#        '{% for k in hash_loop %}{{ k.key }}: ' .
+#        '{{ k.value }}{% endfor %}',
     records_loop_value        =>
-        '<% foreach ( @{$_[0]->{records_loop}} ) { %>' .
-        '<%= $_->{name} %>: <%= $_->{age} %>' .
-        '<% } %>',
+        '{% for r in records_loop %}{{ r.name }}: ' .
+        '{{ r.age }}{% endfor %}',
     array_loop_template       =>
-        '<% foreach ( @{$_[0]->{array_loop}} ) { %><%= $_ %><% } %>',
+        '{% for i in array_loop %}{{ i }}{% endfor %}',
     hash_loop_template        =>
-        '<% foreach ( sort( keys( %{$_[0]->{hash_loop}} ) ) ) { %>' .
-        '<%= $_ %>: <%= $_[0]->{hash_loop}{$_} %>' .
-        '<% } %>',
+        undef,
+#  TODO: hashes are unsorted
+#        '{% for k in hash_loop %}{{ k.key }}: ' .
+#        '{{ k.value }}{% endfor %}',
     records_loop_template     =>
-        '<% foreach ( @{$_[0]->{records_loop}} ) { %>' .
-        '<%= $_->{name} %>: <%= $_->{age} %>' .
-        '<% } %>',
+        '{% for r in records_loop %}{{ r.name }}: ' .
+        '{{ r.age }}{% endfor %}',
     constant_if_literal       =>
-        '<% if( 1 ) { %>true<% } %>',
+        '{% if 1 %}true{% endif %}',
     variable_if_literal       =>
-        '<% if( $_[0]->{variable_if} ) { %>true<% } %>',
+        '{% if variable_if %}true{% endif %}',
     constant_if_else_literal  =>
-        '<% if( 1 ) { %>true<% } else { %>false<% } %>',
+        '{% if 1 %}true{% else %}false{% endif %}',
     variable_if_else_literal  =>
-        '<% if( $_[0]->{variable_if_else} ) { %>true<% } else { %>' .
-        'false<% } %>',
+        '{% if variable_if_else %}true{% else %}false{% endif %}',
     constant_if_template      =>
-        '<% if( 1 ) { %><%= $_[0]->{template_if_true} %><% } %>',
+        '{% if 1 %}{{ template_if_true }}{% endif %}',
     variable_if_template      =>
-        '<% if( $_[0]->{variable_if} ) { %><%= $_[0]->{template_if_true} %>' .
-        '<% } %>',
+        '{% if variable_if %}{{ template_if_true }}{% endif %}',
     constant_if_else_template =>
-        '<% if( 1 ) { %><%= $_[0]->{template_if_true} %><% } else { %>' .
-        '<%= $_[0]->{template_if_false} %><% } %>',
+        '{% if 1 %}{{ template_if_true }}{% else %}' .
+        '{{ template_if_false }}{% endif %}',
     variable_if_else_template =>
-        '<% if( $_[0]->{variable_if_else} ) { %>' .
-        '<%= $_[0]->{template_if_true} %><% } else { %>' .
-        '<%= $_[0]->{template_if_false} %><% } %>',
+        '{% if variable_if_else %}{{ template_if_true }}{% else %}' .
+        '{{ template_if_false }}{% endif %}',
     constant_expression       =>
-        '<%= 10 + 12 %>',
+        undef,
+#        '{{ 10 + 12 }}',
     variable_expression       =>
-        '<%= $_[0]->{variable_expression_a} * ' .
-        '$_[0]->{variable_expression_b} %>',
+        undef,
+#        '{{ variable_expression_a * variable_expression_b }}',
     complex_variable_expression =>
-        '<%= ( ( $_[0]->{variable_expression_a} * ' .
-        '$_[0]->{variable_expression_b} ) + ' .
-        '$_[0]->{variable_expression_a} - ' .
-        '$_[0]->{variable_expression_b} ) / ' .
-        '$_[0]->{variable_expression_b} %>',
+        undef,
+#        '{{ ( ( variable_expression_a * variable_expression_b ) + ' .
+#        'variable_expression_a - variable_expression_b ) / ' .
+#        'variable_expression_b }}',
     constant_function         =>
-        q{<%= substr( 'this has a substring.', 11, 9 ) %>},
+        undef,
+#        q{{{ substr( 'this has a substring.', 11, 9 ) }}},
     variable_function         =>
-        '<%= substr( $_[0]->{variable_function_arg}, 4, 2 ) %>',
+        undef,
+#        '{{ substr( variable_function_arg, 4, 2 ) }}',
     );
 
-sub syntax_type { return( 'embedded-perl' ); }
+sub syntax_type { return( 'mini-language' ); }
 sub pure_perl { return( 1 ); }
 
 sub benchmark_descriptions
 {
     return( {
-        MoTe    =>
-            "Mojo::Template ($Mojo::VERSION)",
+        Sol    =>
+            "Solution ($Solution::VERSION)",
         } );
 }
 
@@ -99,11 +96,12 @@ sub benchmark_functions_for_uncached_string
     my ( $self ) = @_;
 
     return( {
-        MoTe =>
+        Sol =>
             sub
             {
-                my $t = Mojo::Template->new();
-                \$t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                my $t = Solution::Template->new();
+                $t->parse( $_[ 0 ] );
+                \$t->render( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -112,16 +110,7 @@ sub benchmark_functions_for_uncached_disk
 {
     my ( $self, $template_dir ) = @_;
 
-    return( {
-        MoTe =>
-            sub
-            {
-                my $t = Mojo::Template->new();
-                \$t->render_file(
-                    File::Spec->catfile( $template_dir, $_[ 0 ] ),
-                    { %{$_[ 1 ]}, %{$_[ 2 ]} } );
-            },
-        } );
+    return( undef );
 }
 
 sub benchmark_functions_for_disk_cache
@@ -150,18 +139,16 @@ sub benchmark_functions_for_instance_reuse
     my ( $self, $template_dir, $cache_dir ) = @_;
     my ( $t );
 
-    #  Ew ick, I was almost templated to leave this as "unsupported"
-    #  given how much crud I need to wrap around the template engine
-    #  to get it to do this basic task.
+    #  Grr, another template engine that doesn't support files.
     return( {
-        MoTe =>
+        Sol =>
             sub
             {
                 unless( $t )
                 {
                     my ( $fh, $template );
 
-                    $t = Mojo::Template->new();
+                    $t = Solution::Template->new();
                     $fh = IO::File->new(
                         File::Spec->catfile( $template_dir, $_[ 0 ] ), '<' );
                     {
@@ -171,10 +158,8 @@ sub benchmark_functions_for_instance_reuse
                     $fh->close();
 
                     $t->parse( $template );
-                    $t->build();
-                    $t->compile();
                 }
-                \$t->interpret( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -187,12 +172,12 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::MojoTemplate - Template::Benchmark plugin for Mojo::Template.
+Template::Benchmark::Engines::Solution - Template::Benchmark plugin for Solution.
 
 =head1 SYNOPSIS
 
 Provides benchmark functions and template feature syntaxes to allow
-L<Template::Benchmark> to benchmark the L<Mojo::Template> template
+L<Template::Benchmark> to benchmark the L<Solution> template
 engine.
 
 =head1 AUTHOR
@@ -209,7 +194,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Template::Benchmark::Engines::MojoTemplate
+    perldoc Template::Benchmark::Engines::Solution
 
 
 You can also look for information at:
