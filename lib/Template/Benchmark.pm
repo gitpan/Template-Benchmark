@@ -14,7 +14,7 @@ use Scalar::Util;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '1.07_07';
+our $VERSION = '1.07_08';
 
 my @valid_features = qw/
     literal_text
@@ -429,6 +429,9 @@ sub new
         }
 
         $template = $template x $options->{ template_repeats };
+        #  Allow the plugin a chance to rewrite the repeated sections,
+        #  ie: some engines require unique loop names/labels.
+        $template = $engine->preprocess_template( $template );
 
         $template_filename =
             File::Spec->catfile( $template_dir, $leaf . '.txt' );
@@ -756,7 +759,7 @@ Template::Benchmark - Pluggable benchmarker to cross-compare template systems.
 
     my $bench = Template::Benchmark->new(
         duration            => 5,
-        repeats             => 1,
+        template_repeats    => 1,
         array_loop          => 1,
         shared_memory_cache => 0,
         );
