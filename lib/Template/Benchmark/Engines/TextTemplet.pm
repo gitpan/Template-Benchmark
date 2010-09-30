@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use Text::Templet;
 
-our $VERSION = '1.07_09';
+our $VERSION = '1.08';
 
 use vars qw/$args $loop_counter @sorted_keys/;
 
@@ -122,7 +122,7 @@ sub pure_perl { return( 1 ); }
 sub benchmark_descriptions
 {
     return( {
-        TTemplet    =>
+        TeTemplet    =>
             "Text::Templet ($Text::Templet::VERSION)",
         } );
 }
@@ -150,7 +150,7 @@ sub benchmark_functions_for_uncached_string
     my ( $self ) = @_;
 
     return( {
-        TTemplet =>
+        TeTemplet =>
             sub
             {
                 local $args = { %{$_[ 1 ]}, %{$_[ 2 ]} };
