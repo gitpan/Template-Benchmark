@@ -1,5 +1,13 @@
 Revision history for Template-Benchmark
 
+1.08_01 Version released at 2010-10-08-05:50.  *** Development version. ***
+        Version started at  2010-10-01-17:35.
+        Added Cache::Ref support to TemplateSandbox plugin.
+        Added Cache::FastMemoryCache support to TemplateSandbox plugin.
+        Support for multiple features_from and cache_types_from.
+        Made preprocess_template() optional in plugins.
+        Expanded test suite.
+
 1.08    Version released at 2010-09-30-19:07.
         Version started at  2010-09-30-18:55.
         Released rc 1.07_09 as 1.08 stable.

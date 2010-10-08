@@ -14,7 +14,7 @@ use Scalar::Util;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '1.08';
+our $VERSION = '1.08_01';
 
 my @valid_features = qw/
     literal_text
@@ -100,10 +100,8 @@ my %option_defaults = (
     #  Plugin control.
     only_plugin      => {},
     skip_plugin      => {},
-
-    #  Ones with no defaults.
-    features_from    => undef,
-    cache_types_from => undef,
+    features_from    => {},
+    cache_types_from => {},
     );
 
 #  Which engines to try first as the 'reference output' for templates.
@@ -161,7 +159,8 @@ my %datasets = (
 sub new
 {
     my $this = shift;
-    my ( $self, $class, $options, $var_hash1, $var_hash2, %temp_options );
+    my ( $self, $class, $options, $var_hash1, $var_hash2, %temp_options,
+        %keep_cache_types );
 
     $self = {};
     $class = ref( $this ) || $this;
@@ -171,7 +170,8 @@ sub new
     $options = $self->{ options };
     while( my $opt = shift )
     {
-        if( $opt eq 'only_plugin' or $opt eq 'skip_plugin' )
+        if( $opt eq 'only_plugin'   or $opt eq 'skip_plugin' or
+            $opt eq 'features_from' or $opt eq 'cache_types_from' )
         {
             my $val = shift();
             $options->{ $opt } ||= {};
@@ -208,9 +208,9 @@ sub new
     delete $options->{ skip_plugin }
         unless scalar( keys( %{$options->{ skip_plugin }} ) );
     delete $options->{ features_from }
-        unless $options->{ features_from };
+        unless scalar( keys( %{$options->{ features_from }} ) );
     delete $options->{ cache_types_from }
-        unless $options->{ cache_types_from };
+        unless scalar( keys( %{$options->{ cache_types_from }} ) );
 
     if( ref( $options->{ dataset } ) )
     {
@@ -234,6 +234,45 @@ sub new
         $var_hash2 = $datasets{ $options->{ dataset } }->{ hash2 };
     }
 
+    if( $options->{ features_from } )
+    {
+        $self->{ features } = [ @valid_features ];
+        foreach my $plugin ( $self->engine_plugins() )
+        {
+            my $leaf = _engine_leaf( $plugin );
+
+            next unless $options->{ features_from }->{ $leaf };
+
+            eval "use $plugin";
+            next if $@;
+
+            $self->{ features } = [ grep
+                {
+                    defined( $plugin->feature_syntax( $_ ) )
+                } @{$self->{ features }} ];
+        }
+    }
+    else
+    {
+        $self->{ features } =
+            [ 
+            grep { $options->{ $_ } } @valid_features
+            ];
+    }
+    #  TODO: sanity-check some features are left.
+
+    if( $options->{ cache_types_from } )
+    {
+        $self->{ cache_types } = [ @valid_cache_types ];
+        %keep_cache_types = ();
+    }
+    else
+    {
+        $self->{ cache_types } =
+            [ grep { $options->{ $_ } } @valid_cache_types ];
+    }
+    #  TODO: sanity-check some cache_types are left.
+
     $self->{ engines } = [];
     $self->{ engine_errors } = {};
     foreach my $plugin ( $self->engine_plugins() )
@@ -242,8 +281,10 @@ sub new
 
         #  Force-require any features_from or cache_types_from plugin,
         #  regardless of their only_plugin or skip_plugin settings.
-        if( ( ( $options->{ features_from }    || '' ) ne $leaf ) and
-            ( ( $options->{ cache_types_from } || '' ) ne $leaf ) )
+        if( ( not $options->{ features_from } or
+              not $options->{ features_from }->{ $leaf } ) and
+            ( not $options->{ cache_types_from } or
+              not $options->{ cache_types_from }->{ $leaf } ) )
         {
             if( $options->{ only_plugin } )
             {
@@ -261,14 +302,7 @@ sub new
         }
         else
         {
-            if( ( $options->{ features_from } || '' ) eq $leaf )
-            {
-                unshift @{$self->{ engines }}, $plugin;
-            }
-            else
-            {
-                push @{$self->{ engines }}, $plugin;
-            }
+            push @{$self->{ engines }}, $plugin;
         }
     }
 
@@ -294,23 +328,6 @@ sub new
         or die "Unable to make template dir '$self->{ template_dir }': $!";
     mkpath( $self->{ cache_dir } )
         or die "Unable to make cache dir '$self->{ cache_dir }': $!";
-
-    if( $options->{ cache_types_from } )
-    {
-        $self->{ cache_types } = [ @valid_cache_types ];
-    }
-    else
-    {
-        $self->{ cache_types } =
-            [ grep { $options->{ $_ } } @valid_cache_types ];
-    }
-    #  TODO: sanity-check some are left.
-
-    $self->{ features } =
-        [ 
-        grep { $options->{ $_ } } @valid_features
-        ];
-    #  TODO: sanity-check some are left.
 
     $self->{ feature_repeats } =
         {
@@ -372,23 +389,20 @@ sub new
             }
 
             next unless $functions and scalar( keys( %{$functions} ) );
-
             $benchmark_functions{ $cache_type } = $functions;
         }
 
-        $self->{ cache_types } = [
+        %keep_cache_types = map { $_ => 1 }
+            keys( %keep_cache_types ),
             grep { $benchmark_functions{ $_ } } @valid_cache_types
-            ]
-            if ( ( $options->{ cache_types_from } || '' ) eq $leaf );
+            if $options->{ cache_types_from } and
+               $options->{ cache_types_from }->{ $leaf };
 
         unless( %benchmark_functions )
         {
             $self->engine_error( $leaf, 'No matching benchmark functions.' );
             next ENGINE;
         }
-
-        $self->{ features } = [ @valid_features ]
-            if ( ( $options->{ features_from } || '' ) eq $leaf );
 
 #print "Looking at $leaf.\n";
 #use Data::Dumper;
@@ -412,15 +426,6 @@ sub new
             }
         }
 
-        if( ( ( $options->{ features_from } || '' ) eq $leaf ) and
-            $missing_syntaxes )
-        {
-            my %missing = map { $_ => 1 } split( /\s+/, $missing_syntaxes );
-            $self->{ features } =
-                [ grep { !$missing{ $_ } } @{$self->{ features }} ];
-            $missing_syntaxes = '';
-        }
-
         if( $missing_syntaxes )
         {
             $self->engine_error( $leaf,
@@ -431,7 +436,8 @@ sub new
         $template = $template x $options->{ template_repeats };
         #  Allow the plugin a chance to rewrite the repeated sections,
         #  ie: some engines require unique loop names/labels.
-        $template = $engine->preprocess_template( $template );
+        $template = $engine->preprocess_template( $template )
+            if $engine->can( 'preprocess_template' );
 
         $template_filename =
             File::Spec->catfile( $template_dir, $leaf . '.txt' );
@@ -485,13 +491,11 @@ sub new
 
     if( $options->{ cache_types_from } )
     {
-        my %needed_types = map { $_ => 1 } @{$self->{ cache_types }};
-
         #  We need to delete any benchmark functions that crept in
         #  before we figured out what cache types we needed.
         $self->{ benchmark_functions } = {
             map { $_ => $self->{ benchmark_functions }->{ $_ } }
-            grep { $needed_types{ $_ } }
+            grep { $keep_cache_types{ $_ } }
             keys( %{$self->{ benchmark_functions }} )
             };
     }
@@ -1021,6 +1025,38 @@ as options will be ignored and overwritten, and the plugin
 named will also be benchmarked even if you attempted to
 exclude it with the C<skip_plugin> or C<only_plugin> options.
 
+You can supply multiple plugins to C<features_from>, either
+by passing several C<features_from> attributes, or by passing
+an arrayref of plugin names, or a hashref of plugin names with
+true/false values to toggle them on or off.
+The set of features chosen will then be the largest common subset of
+features supported by those engines.
+
+  #  This sets the features to benchmark to all those supported by
+  #  Template::Benchmark::Engines::TemplateSandbox
+  $bench = Template::Benchmark->new(
+        features_from => 'TemplateSandbox',
+        );
+
+  #  This sets the features to benchmark to all those supported by BOTH
+  #  Template::Benchmark::Engines::MojoTemplate and
+  #  Template::Benchmark::Engines::HTMLTemplateCompiled
+  $bench = Template::Benchmark->new(
+        features_from => 'MojoTemplate',
+        features_from => 'HTMLTemplateCompiled',
+        );
+
+  #  This sets the features to benchmark to all those supported by BOTH
+  #  Template::Benchmark::Engines::MojoTemplate and
+  #  Template::Benchmark::Engines::HTMLTemplateCompiled
+  $bench = Template::Benchmark->new(
+        features_from => {
+            MojoTemplate         => 1,
+            HTMLTemplateCompiled => 1,
+            TemplateSandbox      => 0,
+            },
+        );
+
 =item B<cache_types_from> => I<$plugin> (default none)
 
 If set, then the list of I<cache types> will be drawn
@@ -1030,6 +1066,38 @@ If this option is set, any I<cache types> you supply
 as options will be ignored and overwritten, and the plugin
 named will also be benchmarked even if you attempted to
 exclude it with the C<skip_plugin> or C<only_plugin> options.
+
+You can supply multiple plugins to C<cache_types_from>, either
+by passing several C<cache_types_from> attributes, or by passing
+an arrayref of plugin names, or a hashref of plugin names with
+true/false values to toggle them on or off.
+The set of cache types chosen will then be the superset of cache
+types supported by those engines.
+
+  #  This sets the cache types to benchmark to all those supported by
+  #  Template::Benchmark::Engines::TemplateSandbox
+  $bench = Template::Benchmark->new(
+        cache_types_from => 'TemplateSandbox',
+        );
+
+  #  This sets the cache types to benchmark to all those supported by EITHER of
+  #  Template::Benchmark::Engines::MojoTemplate and
+  #  Template::Benchmark::Engines::HTMLTemplateCompiled
+  $bench = Template::Benchmark->new(
+        cache_types_from => 'MojoTemplate',
+        cache_types_from => 'HTMLTemplateCompiled',
+        );
+
+  #  This sets the features to benchmark to all those supported by EITHER of
+  #  Template::Benchmark::Engines::MojoTemplate and
+  #  Template::Benchmark::Engines::HTMLTemplateCompiled
+  $bench = Template::Benchmark->new(
+        cache_types_from => {
+            MojoTemplate         => 1,
+            HTMLTemplateCompiled => 1,
+            TemplateSandbox      => 0,
+            },
+        );
 
 =item B<template_repeats> => I<$number> (default 30)
 
